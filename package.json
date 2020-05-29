@@ -1,0 +1,27 @@
+{
+  "name": "discordbot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@discordjs/opus": "^0.3.2",
+    "@ffmpeg-installer/ffmpeg": "^1.0.20",
+    "defaults": "^1.0.3",
+    "discord.js": "^12.2.0",
+    "ffmpeg-static": "^4.2.2",
+    "fluent-ffmpeg": "^2.1.2",
+    "node-libsamplerate": "^1.0.0",
+    "node-record-lpcm16": "^1.0.1",
+    "prism-media": "^1.2.2",
+    "wav": "^1.0.2",
+    "youtube-search": "^1.1.4",
+    "ytdl-core": "^2.1.4",
+    "ytdl-core-discord": "^1.2.0"
+  }
+}
