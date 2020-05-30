@@ -1,8 +1,9 @@
 const search = require('youtube-search')
+const keys = require('./keys.json')
 
 const options = {
     maxResults: 1,
-    key: 'AIzaSyCWNT__dHd76HXzLIXB-FF7Nmfeiy2DUJE',
+    key: keys.youtube_api_token,
     type: 'video',
     relevanceLanguage: `en`,
     regionCode: 'CA',

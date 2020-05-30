@@ -5,13 +5,30 @@ const SampleRate = require('node-libsamplerate');
 
 class Snowboy {
     constructor() {
-        /** @member {Map} **/
+        /** @member {Map<string><Detector>} **/
         this.detectors = new Map()
     }
 
-    recognize(user, input, callback) {
-        if (this.detectors.has(user)) {
-            console.log(`Already have detector for ${user}`)
+    /**
+     *
+     * @param {string} userId
+     */
+    remove(userId) {
+        if (this.detectors.has(userId)) {
+            this.detectors.get(userId).reset()
+            this.detectors.delete(userId)
+        }
+    }
+
+    /**
+     *
+     * @param {string} userId
+     * @param {ReadableStream} input
+     * @param callback
+     */
+    recognize(userId, input, callback) {
+        if (this.detectors.has(userId)) {
+            console.log(`Already have detector for ${userId}`)
             return
         }
         const detector = createRecognizer(callback)
@@ -22,7 +39,7 @@ class Snowboy {
         }
         const DownSampler = new SampleRate({type: 1, channels: 1, fromRate: 48000, fromDepth: 16, toRate: 16000, toDepth: 16})
         input.pipe(StereoToMonoTransformer).pipe(DownSampler).pipe(detector)
-        this.detectors.set(user, detector);
+        this.detectors.set(userId, detector);
     }
 }
 

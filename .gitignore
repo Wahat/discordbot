@@ -117,4 +117,9 @@ dist
 
 .DS_Store
 .idea/
-clips
+clips/
+configs/
+
+keys.json
+
+SpeechRecognition/venv

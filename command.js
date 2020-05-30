@@ -1,23 +1,40 @@
-const DJ = require('./dj.js')
-const Events = require('events')
+const events = require('events')
+const ctx = require('./context.js')
 
 class CommandHandler {
-    constructor() {
-        this.DJ = new DJ.DJ()
-        this.eventBus = new Events.EventEmitter()
+    /**
+     *
+     * @param {DJ} dj
+     * @param {AudioHandler} audioHandler
+     */
+    constructor(dj, audioHandler) {
+        /** @member {DJ} **/
+        this.dj = dj
 
-        this.eventBus.on('playAudioAck', (connection, mode) => {
-            this.DJ.playAudioAck(connection, mode)
+        /** @member {AudioHandler} **/
+        this.audioHandler = audioHandler
+        this.eventReceiver = new events.EventEmitter()
+
+        this.eventReceiver.on('playAudioAck', (context, mode) => {
+            this.dj.playAudioAck(context, mode)
         })
 
-        this.eventBus.on('command', (context, msgContext) => {
+        this.eventReceiver.on('command', (context, msgContext) => {
             this.onCommandReceived(context, msgContext)
+        })
+
+        this.eventReceiver.on('playAudioWavStream', (context, stream) => {
+            this.dj.playAudioWavStream(context, stream)
+        })
+
+        this.eventReceiver.on('error', (context, msg) => {
+
         })
     }
 
     /**
      *
-     * @param {DiscordContext} context
+     * @param {GuildContext} context
      * @param {MessageContext} msgContext
      */
     onCommandReceived(context,  msgContext) {
@@ -31,41 +48,79 @@ class CommandHandler {
         const commandType = args[0]
         args.shift()
         const commandParams = args
+
+        if (!msgContext.getTextChannel()) {
+            msgContext.setTextChannel(context.getTextChannel())
+        }
+
+        let commandContext = new ctx.VoiceConnectionMessageContext(msgContext, context.getVoiceConnection())
+        // VoiceConnectionRelatedCommands
         switch(commandType) {
             case "play":
-                const args = this.parsePlay(commandParams)
+                const args = this.parseStringArgs(commandParams)
                 if (args === "") {
                     return
                 }
-                this.DJ.play(context, msgContext, args)
+                this.dj.play(commandContext, args)
                 break
             case 'skip':
-                this.DJ.skip(context)
+                this.dj.skip(commandContext)
                 break
             case 'stop':
-                this.DJ.stop(context)
+                this.dj.stop(commandContext)
                 break
             case 'pause':
-                this.DJ.pause(context)
+                this.dj.pause(commandContext)
                 break
             case 'resume':
-                this.DJ.resume(context)
+                this.dj.resume(commandContext)
                 break
             case 'volume':
                 const volume = this.parseSingleInteger(commandParams)
                 if (volume === -1) {
                     return
                 }
-                this.DJ.volume(context, volume)
+                this.dj.volume(commandContext, volume)
                 break
             case 'queue':
-                this.DJ.queue(context)
+                this.dj.queue(commandContext)
                 break
             case 'song':
                 const index = this.parseSingleInteger(commandParams, 0)
-                this.DJ.song(context, index)
+                this.dj.song(commandContext, index)
+                break
+            case 'lower':
+                this.dj.volume(commandContext, 50, true)
+                break
+            case 'higher':
+                this.dj.volume(commandContext, 200, true)
+                break
+            case 'record':
+                const recordUserName = this.parseStringArgs(commandParams)
+                const recordUser = context.getUserFromName(recordUserName)
+                if (!recordUser) {
+                    return
+                }
+                this.audioHandler.recordUserToFile(commandContext, recordUser.user, `${recordUser.displayName} said`, 0)
+                break
+            case 'replay':
+                const replayUserName = this.parseStringArgs(commandParams)
+                const replayUser = context.getUserFromName(replayUserName)
+                if (!replayUser) {
+                    return
+                }
+                this.audioHandler.replayUser(commandContext, replayUser.user, 0)
                 break
         }
+    }
+
+    /**
+     *
+     * @param {GuildContext} context
+     * @param {MessageContext} msgContext
+     */
+    determineReplyChannel(context, msgContext) {
+        return msgContext.getTextChannel() ? msgContext.getTextChannel() : context.getTextChannel()
     }
 
     /**
@@ -95,7 +150,7 @@ class CommandHandler {
      * @param {string[]} args
      * @returns {string}
      */
-    parsePlay(args) {
+    parseStringArgs(args) {
         if (args.length < 1) {
             return ""
         }

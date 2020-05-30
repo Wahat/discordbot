@@ -1,23 +1,25 @@
-class Responder {
+class TextResponder {
     constructor() {
+        /** @member {Map<string><Map<string><Message>>} **/
         this.contextMessagesMap = new Map()
     }
 
     /**
      *
-     * @param {DiscordContext} context
+     * @param {MessageContext} context
      * @returns {Map}
      */
     getMessagesMap(context) {
-        if (!this.contextMessagesMap.has(context.getGuildId())) {
-            this.contextMessagesMap.set(context.getGuildId(), new Map())
+        const guildId = context.getTextChannel().guild.id
+        if (!this.contextMessagesMap.has(guildId)) {
+            this.contextMessagesMap.set(guildId, new Map())
         }
-        return this.contextMessagesMap.get(context.getGuildId())
+        return this.contextMessagesMap.get(guildId)
     }
 
     /**
      *
-     * @param {DiscordContext} context
+     * @param {MessageContext} context
      * @param {MessageEmbed} embed
      * @param {string} type
      */
@@ -33,7 +35,7 @@ class Responder {
 
     /**
      *
-     * @param {DiscordContext} context
+     * @param {MessageContext} context
      * @param {string} type
      */
     remove(context, type) {
@@ -45,6 +47,10 @@ class Responder {
         messagesMap.delete(type)
     }
 
+    /**
+     *
+     * @param {MessageContext} context
+     */
     startTyping(context) {
         const textChannel = context.getTextChannel()
         if (textChannel === undefined) {
@@ -53,6 +59,10 @@ class Responder {
         textChannel.startTyping()
     }
 
+    /**
+     *
+     * @param {MessageContext} context
+     */
     stopTyping(context) {
         const textChannel = context.getTextChannel()
         if (textChannel === undefined) {
@@ -61,4 +71,4 @@ class Responder {
         textChannel.stopTyping(true)
     }
 }
-module.exports.Responder = Responder
+module.exports.TextResponder = TextResponder

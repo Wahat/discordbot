@@ -8,7 +8,7 @@ function getBaseEmbed() {
 function createNowPlayingEmbed(song) {
     return getBaseEmbed()
         .setTitle("Now Playing")
-        .setDescription(`[${song.title}](${song.url}) [<@${song.requester}>]`)
+        .setDescription(`[${song.title}](${song.url}) [<@${song.requesterId}>]`)
         .setThumbnail(song.thumbnail_url)
 }
 
@@ -26,7 +26,7 @@ function createQueueEmbed(queue, song) {
     queue.forEach(song => {
         queueString += `${song.title}\t\t${song.length}s\n`
     })
-    const newlyQueued = song == null ? "" : `<@${song.requester}> queued: [${song.title}](${song.url})`
+    const newlyQueued = song == null ? "" : `<@${song.requesterId}> queued: [${song.title}](${song.url})`
     return getBaseEmbed()
         .setTitle('Queued')
         .setDescription(`${newlyQueued}\n\`\`\`\n${queueString}\`\`\``)
@@ -45,7 +45,14 @@ function createSongDetailsEmbed( queue, index) {
     const title = index === 0 ? 'Current Song' : `Song ${index}`
     return getBaseEmbed()
         .setTitle(title)
-        .setDescription(`[${song.title}](${song.url}) queued [<@${song.requester}>]`)
+        .setDescription(`[${song.title}](${song.url}) queued [<@${song.requesterId}>]`)
+}
+
+function createRecordingFileEmbed(filePath, caption, userId) {
+    const messageAttachment = new Discord.MessageAttachment(filePath, `${caption}.mp3`)
+    return getBaseEmbed()
+        .setDescription(`Recording from [<@${userId}>]`)
+        .attachFiles(messageAttachment)
 }
 
 /**
@@ -61,3 +68,4 @@ module.exports.createNowPlayingEmbed = createNowPlayingEmbed
 module.exports.createQueueEmbed = createQueueEmbed
 module.exports.createErrorEmbed = createErrorEmbed
 module.exports.createSongDetailsEmbed = createSongDetailsEmbed
+module.exports.createRecordingFileEmbed = createRecordingFileEmbed

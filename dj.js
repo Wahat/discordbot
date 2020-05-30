@@ -10,12 +10,19 @@ class DJ {
     siri_ack_finish = '/Users/henryxu/Documents/WebstormProjects/discordbot/resources/siri_acknowledge_done.mp3'
 
     constructor() {
+        /** @member {Map<string><Object>} **/
         this.guildQueues = new Map()
-        this.responder = new responder.Responder()
+        this.textResponder = new responder.TextResponder()
     }
 
+    /**
+     *
+     * @param {VoiceConnectionMessageContext} context
+     * @returns {Object}
+     */
     getGuildQueue(context) {
-        if(!this.guildQueues.has(context.getGuildId())) {
+        const guildId = context.getVoiceConnection().channel.guild.id
+        if(!this.guildQueues.has(guildId)) {
             const queueObject = {
                 voiceChannel: context.getVoiceConnection().channel,
                 connection: context.getVoiceConnection(),
@@ -23,52 +30,60 @@ class DJ {
                 volume: 0.25,
                 isPlaying: true,
             };
-            this.guildQueues.set(context.getGuildId(), queueObject)
+            this.guildQueues.set(guildId, queueObject)
         }
-        return this.guildQueues.get(context.getGuildId())
+        return this.guildQueues.get(guildId)
     }
 
     /**
      *
-     * @param {DiscordContext} context
+     * @param {VoiceConnectionMessageContext} context
      * @param {int} volume
+     * @param relative
      */
-    volume(context, volume) {
+    volume(context, volume, relative=false) {
         const queue = this.getGuildQueue(context)
-        queue.connection.dispatcher.setVolume(volume / 100);
+        if (relative) {
+            const prevVolume = queue.volume
+            volume = prevVolume * (volume / 100)
+        }
+        const newVolume = volume / 100
+        queue.connection.dispatcher.setVolume(newVolume);
+        queue.volume = newVolume
     }
 
     /**
      *
-     * @param {DiscordContext} context
+     * @param {VoiceConnectionMessageContext} context
      */
     queue(context) {
         const queue = this.getGuildQueue(context)
-        this.responder.respond(context, embedder.createQueueEmbed(queue.songs, null), 'queue')
+        this.textResponder.respond(context, embedder.createQueueEmbed(queue.songs, null), 'queue')
     }
 
     /**
      *
-     * @param {DiscordContext} context
+     * @param {VoiceConnectionMessageContext} context
      * @param index
      */
     song(context, index) {
         const queue = this.guildQueues.get(context.getGuildId())
-        this.responder.respond(context, embedder.createSongDetailsEmbed(queue.songs, index), 'current')
+        this.textResponder.respond(context, embedder.createSongDetailsEmbed(queue.songs, index), 'current')
     }
 
     /**
      *
-     * @param {DiscordContext} context
+     * @param {VoiceConnectionMessageContext} context
      */
     skip(context) {
         const queue = this.getGuildQueue(context)
+        //TODO show message
         this.playNext(context, queue)
     }
 
     /**
      *
-     * @param {DiscordContext} context
+     * @param {VoiceConnectionMessageContext} context
      */
     stop(context) {
         // if (!message.member.voice.channel)
@@ -77,71 +92,96 @@ class DJ {
         //     );
         const queue = this.getGuildQueue(context)
         queue.songs = [];
+
+        //TODO: show message
         queue.connection.dispatcher.end();
     }
 
+    /**
+     *
+     * @param {VoiceConnectionMessageContext} context
+     */
     pause(context) {
         const queue = this.getGuildQueue(context)
         if (queue.connection.dispatcher == null) {
             return
         }
+        // TODO: show message
         queue.connection.dispatcher.pause()
     }
 
+    /**
+     *
+     * @param {VoiceConnectionMessageContext} context
+     */
     resume(context) {
         const queue = this.getGuildQueue(context)
         if (queue.connection.dispatcher == null) {
             return
         }
+        // TODO: show message
         queue.connection.dispatcher.resume()
     }
 
     /**
      *
-     * @param {DiscordContext} context
+     * @param {VoiceConnectionMessageContext} context
      * @param {int} mode - 0 for start, 1 for end
      */
     playAudioAck(context, mode) {
         const file = mode === 0 ? this.siri_ack_start : this.siri_ack_finish
         const hotwordAckStream = convertMp3ToOpus(file)
-        this.playAudioEvent(context, hotwordAckStream)
+        this.playAudioEvent(context, hotwordAckStream, 'opus')
     }
 
     /**
      *
-     * @param {DiscordContext} context
-     * @param {ReadableStream} audioStream
+     * @param {VoiceConnectionMessageContext} context
+     * @param stream
      */
-    playAudioEvent(context, audioStream) {
+    playAudioWavStream(context, stream) {
+        this.playAudioEvent(context, stream, 'converted')
+    }
+
+    /**
+     * Interrupts current song to play an audio clip, then resumes song
+     * @param {VoiceConnectionMessageContext} context
+     * @param {ReadableStream} audioStream
+     * @param {string} type
+     */
+    playAudioEvent(context, audioStream, type) {
         const currentSong = this.getGuildQueue(context).songs[0]
         if (currentSong && currentSong.stream) {
             currentSong.stream.unpipe()
             currentSong.stream.pause()
         }
-        context.getVoiceConnection().play(audioStream).on('finish', () => {
+        context.getVoiceConnection().play(audioStream, {
+            type: type
+        }).on('finish', () => {
             this.playSong(context, currentSong, true)
+            context.getVoiceConnection().removeAllListeners('finish')
         })
     }
 
     /**
      *
-     * @param {DiscordContext} context
-     * @param {MessageContext} msgContext
+     * @param {VoiceConnectionMessageContext} context
      * @param {string} args
      * @returns {Promise<void>}
      */
-    async play(context, msgContext, args) {
+    async play(context, args) {
+        // TODO refactor to not work only for youtube
         const url = await search.searchYoutube(args)
-        this.responder.startTyping(context)
+        this.textResponder.startTyping(context)
         const songInfo = await ytdl.getInfo(url);
-        this.responder.stopTyping(context)
+        this.textResponder.stopTyping(context)
         const song = {
             title: songInfo.title,
             url: songInfo.video_url,
             thumbnail: songInfo.thumbnail_url,
             author: songInfo.author,
             length: songInfo.length_seconds,
-            requester: msgContext.getUser().id,
+            requesterId: context.getUser().id,
             stream: null
         }
         const queue = this.getGuildQueue(context)
@@ -149,28 +189,32 @@ class DJ {
         if (queue.songs.length === 1) {
             this.playSong(context, queue.songs[0])
         } else {
-            this.responder.remove(context, 'queue')
-            this.responder.respond(context, embedder.createQueueEmbed(queue.songs, song), 'queue')
+            this.textResponder.remove(context, 'queue')
+            this.textResponder.respond(context, embedder.createQueueEmbed(queue.songs, song), 'queue')
             console.log(`${song.title} was added to the queue, new queue size ${queue.songs.length}`)
         }
     }
 
     /**
      *
-     * @param {DiscordContext} context
+     * @param {VoiceConnectionMessageContext} context
      * @param {Object} song
      * @param {boolean} resume
      * @returns {Promise<void>}
      */
     async playSong(context, song, resume = false) {
-        const queue = this.guildQueues.get(context.getGuildId());
+        const queue = this.getGuildQueue(context)
         if (!song || (resume && !song.stream)) {
+            if (queue.connection.dispatcher) {
+                queue.connection.dispatcher.end()
+            }
             return
         }
         if (!resume) {
             song.stream = await ytdl(song.url, {
                 quality: 'highestaudio',
-                highWaterMark: 1024 * 1024 * 10
+                highWaterMark: 1024 * 1024 * 10,
+                volume: queue.volume
             })
         } else {
             song.stream.resume()
@@ -183,12 +227,12 @@ class DJ {
             })
             .on('start', () => {
                 if (!resume) {
-                    this.responder.respond(context, embedder.createNowPlayingEmbed(song), 'play')
+                    this.textResponder.respond(context, embedder.createNowPlayingEmbed(song), 'play')
                 }
             })
             .on('finish', () => {
-                this.responder.remove(context, 'play')
-                this.responder.remove(context, 'queue')
+                this.textResponder.remove(context, 'play')
+                this.textResponder.remove(context, 'queue')
                 this.playNext(context, queue)
             })
             .on('error', error => console.error(error))
@@ -199,7 +243,7 @@ class DJ {
 
     /**
      *
-     * @param {DiscordContext} context
+     * @param {VoiceConnectionMessageContext} context
      * @param {Object} queue
      */
     playNext(context, queue) {
@@ -226,7 +270,7 @@ function convertMp3ToOpus(inputPath) {
     });
     const mp3Stream = fs.createReadStream(inputPath);
     mp3Stream.pipe(transcoder).pipe(opus)
-    return mp3Stream
+    return opus
 }
 
 module.exports.DJ = DJ

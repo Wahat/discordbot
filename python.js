@@ -12,7 +12,7 @@ const spawn = require("child_process").spawn;
  * @param {onVoiceParsedCallback} callback
  */
 function runSpeechRecognition(file, callback) {
-    const pythonProcess = spawn('python', ["/Users/henryxu/Documents/PycharmProjects/SpeechRecognition/main.py", file]);
+    const pythonProcess = spawn('python', ["./SpeechRecognition/main.py", file]);
     pythonProcess.stdout.on('data', data => {
         callback(data)
     });

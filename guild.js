@@ -1,4 +1,6 @@
 const ctx = require('./context.js')
+const events = require('events')
+const config = require('./config.js')
 
 class GuildHandler {
     /**
@@ -8,12 +10,25 @@ class GuildHandler {
     constructor(client) {
         /** @member {Client} **/
         this.client = client
+        this.eventEmitter = new events.EventEmitter()
+        this.configHandler = new config.ConfigHandler()
+
+        this.discordContexts = new Map()
+    }
+
+    getGuildContext(connection, textChannel) {
+        const guild = textChannel.guild ? textChannel.guild : connection.channel.guild
+        if (!this.discordContexts.has(guild.id)) {
+            this.discordContexts.set(guild.id,
+                new ctx.GuildContext(this.configHandler, connection, textChannel))
+        }
+        return this.discordContexts.get(guild.id)
     }
 
     /**
      *
      * @callback onJoinedCallback
-     * @param {DiscordContext} context
+     * @param {GuildContext} context
      * @param {MessageContext} msgContext
      */
 
@@ -28,11 +43,26 @@ class GuildHandler {
 
     registerJoinOnJoin(callback) {
         this.client.on('voiceStateUpdate', (oldState, newState) => {
-            if (!hasUserJoinedChannel(oldState, newState) || isAlreadyInChannel(newState.channel, this.client.user.id)) {
+            if (!hasUserJoinedChannel(oldState, newState)) {
+                this.checkIfUserLeftCurrentChannel(oldState, newState)
+                return
+            }
+            if (isAlreadyInChannel(newState.channel, this.client.user.id)) {
                 return
             }
             this.joinVoiceChannel(newState.channel, this.findTextChannel(newState.guild), callback)
         })
+    }
+
+    /**
+     *
+     * @param {VoiceState} oldState
+     * @param {VoiceState} newState
+     */
+    checkIfUserLeftCurrentChannel(oldState, newState) {
+        if (oldState.channel && !newState.channel) {
+            this.eventEmitter.emit('userLeftChannel', oldState.guild.id, oldState.member.user.id)
+        }
     }
 
     /**
@@ -51,7 +81,7 @@ class GuildHandler {
                 return
             }
             this.joinVoiceChannel(voiceChannel, msg.channel, callback,
-                new ctx.MessageContext(msg.member.user, msg.content.replace(prefix, '')))
+                new ctx.MessageContext(msg.member.user, msg.content.replace(prefix, ''), msg.channel))
         });
     }
 
@@ -65,7 +95,7 @@ class GuildHandler {
     joinVoiceChannel(voiceChannel, textChannel, callback, msg=null) {
         voiceChannel.join().then(connection => {
             console.log(`Joining channel ${voiceChannel.name}`)
-            callback(new ctx.DiscordContext(connection, textChannel), msg)
+            callback(this.getGuildContext(connection, textChannel), msg)
         })
     }
 
@@ -78,10 +108,10 @@ class GuildHandler {
         const desiredChannel = ""
         let textChannel = guild.channels.cache.filter(channel => channel.type === 'text')
             .find(channel => channel.name === desiredChannel)
-        if (textChannel === undefined) {
+        if (!textChannel) {
             textChannel = guild.channels.cache.filter(channel => channel.type === 'text').first()
         }
-        if (textChannel === undefined) {
+        if (!textChannel) {
             console.log(`No text channel found for ${guild.name}`)
         }
         return textChannel
@@ -107,10 +137,8 @@ function isAlreadyInChannel(channel, botId) {
     try {
         channel.guild.channels.cache.filter(channel => channel.type === 'voice').forEach(channel => {
             channel.members.forEach(member => {
-                if (member.user !== undefined) {
-                    if (member.user.id === botId) {
+                if (member.user && member.user.id === botId) {
                         throw Error()
-                    }
                 }
             })
         })
@@ -127,7 +155,7 @@ function isAlreadyInChannel(channel, botId) {
  * @returns {boolean}
  */
 function hasUserJoinedChannel(oldState, newState) {
-    return oldState.channel == null && newState.channel != null
+    return !oldState.channel && newState.channel
 }
 
 module.exports.GuildHandler = GuildHandler
