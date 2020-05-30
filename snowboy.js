@@ -5,29 +5,46 @@ const SampleRate = require('node-libsamplerate');
 
 class Snowboy {
     constructor() {
-        /** @member {Map<string><Detector>} **/
-        this.detectors = new Map()
+        /** @member {Map<string><Map<string><Detector>>} **/
+        this.guildDetectorsMap = new Map()
     }
 
     /**
      *
+     * @param {GuildContext} context
+     * @returns {*}
+     */
+    getGuildDetectors(context) {
+        const guildId = context.getTextChannel().guild.id
+        if (!this.guildDetectorsMap.has(guildId)) {
+            this.guildDetectorsMap.set(guildId, new Map())
+        }
+        return this.guildDetectorsMap.get(guildId)
+    }
+
+    /**
+     *
+     * @param {string} guildId
      * @param {string} userId
      */
-    remove(userId) {
-        if (this.detectors.has(userId)) {
-            this.detectors.get(userId).reset()
-            this.detectors.delete(userId)
+    remove(guildId, userId) {
+        const detectors = this.guildDetectorsMap.get(guildId)
+        if (detectors && detectors.has(userId)) {
+            detectors.get(userId).reset()
+            detectors.delete(userId)
         }
     }
 
     /**
      *
+     * @param {GuildContext} context
      * @param {string} userId
      * @param {ReadableStream} input
      * @param callback
      */
-    recognize(userId, input, callback) {
-        if (this.detectors.has(userId)) {
+    recognize(context, userId, input, callback) {
+        const detectors = this.getGuildDetectors(context)
+        if (detectors.has(userId)) {
             console.log(`Already have detector for ${userId}`)
             return
         }
@@ -39,7 +56,7 @@ class Snowboy {
         }
         const DownSampler = new SampleRate({type: 1, channels: 1, fromRate: 48000, fromDepth: 16, toRate: 16000, toDepth: 16})
         input.pipe(StereoToMonoTransformer).pipe(DownSampler).pipe(detector)
-        this.detectors.set(userId, detector);
+        detectors.set(userId, detector);
     }
 }
 
@@ -104,4 +121,4 @@ function convertStereoToMono(buffer) {
     return newBuffer
 }
 
-module.exports.Snowboy = Snowboy
+module.exports.Snowboy = new Snowboy()

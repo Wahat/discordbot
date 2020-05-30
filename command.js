@@ -10,7 +10,6 @@ class CommandHandler {
     constructor(dj, audioHandler) {
         /** @member {DJ} **/
         this.dj = dj
-
         /** @member {AudioHandler} **/
         this.audioHandler = audioHandler
         this.eventReceiver = new events.EventEmitter()
@@ -54,7 +53,7 @@ class CommandHandler {
         }
 
         let commandContext = new ctx.VoiceConnectionMessageContext(msgContext, context.getVoiceConnection())
-        // VoiceConnectionRelatedCommands
+        // VoiceConnection related commands
         switch(commandType) {
             case "play":
                 const args = this.parseStringArgs(commandParams)
@@ -77,7 +76,7 @@ class CommandHandler {
                 break
             case 'volume':
                 const volume = this.parseSingleInteger(commandParams)
-                if (volume === -1) {
+                if (volume < 0) {
                     return
                 }
                 this.dj.volume(commandContext, volume)

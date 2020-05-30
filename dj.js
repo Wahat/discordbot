@@ -2,17 +2,16 @@ const fs = require('fs')
 const ytdl = require('ytdl-core-discord')
 const search = require('./search.js')
 const prism = require('prism-media')
-const responder = require('./responder.js')
+const textResponder = require('./responder.js').TextResponder
 const embedder = require('./embedder.js')
 
 class DJ {
-    siri_ack_start = '/Users/henryxu/Documents/WebstormProjects/discordbot/resources/siri_acknowledge.mp3'
-    siri_ack_finish = '/Users/henryxu/Documents/WebstormProjects/discordbot/resources/siri_acknowledge_done.mp3'
+    siri_ack_start = './resources/siri_acknowledge.mp3'
+    siri_ack_finish = './resources/siri_acknowledge_done.mp3'
 
     constructor() {
         /** @member {Map<string><Object>} **/
         this.guildQueues = new Map()
-        this.textResponder = new responder.TextResponder()
     }
 
     /**
@@ -44,7 +43,7 @@ class DJ {
     volume(context, volume, relative=false) {
         const queue = this.getGuildQueue(context)
         if (relative) {
-            const prevVolume = queue.volume
+            const prevVolume = queue.volume * 100
             volume = prevVolume * (volume / 100)
         }
         const newVolume = volume / 100
@@ -58,7 +57,7 @@ class DJ {
      */
     queue(context) {
         const queue = this.getGuildQueue(context)
-        this.textResponder.respond(context, embedder.createQueueEmbed(queue.songs, null), 'queue')
+        textResponder.respond(context, embedder.createQueueEmbed(queue.songs, null), 'queue')
     }
 
     /**
@@ -68,7 +67,7 @@ class DJ {
      */
     song(context, index) {
         const queue = this.guildQueues.get(context.getGuildId())
-        this.textResponder.respond(context, embedder.createSongDetailsEmbed(queue.songs, index), 'current')
+        textResponder.respond(context, embedder.createSongDetailsEmbed(queue.songs, index), 'current')
     }
 
     /**
@@ -172,9 +171,9 @@ class DJ {
     async play(context, args) {
         // TODO refactor to not work only for youtube
         const url = await search.searchYoutube(args)
-        this.textResponder.startTyping(context)
+        textResponder.startTyping(context)
         const songInfo = await ytdl.getInfo(url);
-        this.textResponder.stopTyping(context)
+        textResponder.stopTyping(context)
         const song = {
             title: songInfo.title,
             url: songInfo.video_url,
@@ -189,8 +188,8 @@ class DJ {
         if (queue.songs.length === 1) {
             this.playSong(context, queue.songs[0])
         } else {
-            this.textResponder.remove(context, 'queue')
-            this.textResponder.respond(context, embedder.createQueueEmbed(queue.songs, song), 'queue')
+            textResponder.remove(context, 'queue')
+            textResponder.respond(context, embedder.createQueueEmbed(queue.songs, song), 'queue')
             console.log(`${song.title} was added to the queue, new queue size ${queue.songs.length}`)
         }
     }
@@ -214,7 +213,6 @@ class DJ {
             song.stream = await ytdl(song.url, {
                 quality: 'highestaudio',
                 highWaterMark: 1024 * 1024 * 10,
-                volume: queue.volume
             })
         } else {
             song.stream.resume()
@@ -222,17 +220,17 @@ class DJ {
         queue.connection
             .play(song.stream, {
                 type: 'opus',
-                volume: '0.25',
+                volume: queue.volume,
                 highWaterMark: 48
             })
             .on('start', () => {
                 if (!resume) {
-                    this.textResponder.respond(context, embedder.createNowPlayingEmbed(song), 'play')
+                    textResponder.respond(context, embedder.createNowPlayingEmbed(song), 'play')
                 }
             })
             .on('finish', () => {
-                this.textResponder.remove(context, 'play')
-                this.textResponder.remove(context, 'queue')
+                textResponder.remove(context, 'play')
+                textResponder.remove(context, 'queue')
                 this.playNext(context, queue)
             })
             .on('error', error => console.error(error))
@@ -254,7 +252,7 @@ class DJ {
 
 /**
  *
- * @param inputPath
+ * @param {string} inputPath
  * @returns {ReadStream}
  */
 function convertMp3ToOpus(inputPath) {
@@ -273,4 +271,4 @@ function convertMp3ToOpus(inputPath) {
     return opus
 }
 
-module.exports.DJ = DJ
+module.exports.DJ = new DJ()

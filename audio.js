@@ -1,16 +1,15 @@
 const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
 const ffmpeg = require('fluent-ffmpeg');
 const python = require('./python.js')
-const snowboy = require('./snowboy.js')
+const snowboy = require('./snowboy.js').Snowboy
 const stream = require('stream')
 const lame = require('node-lame')
 
-const wav = require('wav')
 const ctx = require('./context.js')
 const recorder = require('./recorder.js')
 const embedder = require('./embedder.js')
 const fs = require('fs')
-require('events')
+const textResponder = require('./responder.js').TextResponder
 
 ffmpeg.setFfmpegPath(ffmpegPath);
 
@@ -33,7 +32,7 @@ class AudioHandler {
         const guildId = context.getVoiceConnection().channel.guild.id
         if (!this.guilds.has(guildId)) {
             console.log(`Missing audio context for ${guildId}`)
-            this.guilds.set(guildId, new ctx.GuildAudioContext(new snowboy.Snowboy()))
+            this.guilds.set(guildId, new ctx.GuildAudioContext())
         }
         return this.guilds.get(guildId)
     }
@@ -68,7 +67,7 @@ class AudioHandler {
             }
             console.log(`Removing ${userId}`)
             audioContext.removeAudioStream(userId)
-            audioContext.getDetector().remove(userId)
+            snowboy.remove(guildId, userId)
         })
     }
 
@@ -113,7 +112,7 @@ class AudioHandler {
         const recorderStream = new recorder.Recorder()
         audio.pipe(recorderStream)
         this.getGuildAudioContext(context).setAudioStream(user.id, recorderStream)
-        this.getGuildAudioContext(context).getDetector().recognize(user.id, recorderStream, (trigger) => {
+        snowboy.recognize(context, user.id, recorderStream, (trigger) => {
             if (this.isListeningToCommand) {
                 console.log('Already listening for a command')
             }
@@ -121,18 +120,12 @@ class AudioHandler {
             this.commandsEventEmitter.emit('playAudioAck', context, 0)
             const recognitionStream = new stream.PassThrough()
             recorderStream.pipe(recognitionStream)
-            const outputFile = `/Users/henryxu/Documents/WebstormProjects/discordbot/clips/${user.tag}.wav`
-            writeStreamToWavFile(recognitionStream, outputFile)
-            recognitionStream.on('end', () => {
-                console.log("Finished recording")
-                python.runSpeechRecognition(`${outputFile}`, data => {
-                    console.log(`${user.tag} said ${data}`)
-                    this.commandsEventEmitter.emit('command', context, new ctx.MessageContext(user, data.toString()))
-                })
+            python.runSpeechRecognition(recognitionStream, user.tag, data => {
+                console.log(`${user.tag} said ${data}`)
+                this.commandsEventEmitter.emit('command', context, new ctx.MessageContext(user, data.toString()))
             })
             setTimeout(() => {
                 recognitionStream.end()
-                recognitionStream.destroy()
                 this.commandsEventEmitter.emit('playAudioAck', context, 1)
                 this.isListeningToCommand = false
             }, 3000)
@@ -152,20 +145,21 @@ class AudioHandler {
             console.log(`No audioStream for ${user.tag}`)
             return
         }
-        const outputFile = `/Users/henryxu/Documents/WebstormProjects/discordbot/clips/${user.tag}_recorded.mp3`
+        const outputFile = `./clips/${user.tag}_recorded.mp3`
         writeStreamToMp3File(audioStream.getBuffer(), outputFile, caption, user.tag, error => {
             if (error) {
                 console.log(`There was an error writing ${outputFile} to mp3: ${error.toString()}`)
                 return
             }
-            //TODO call responder singleton
-            context.getTextChannel().send(embedder.createRecordingFileEmbed(outputFile, caption, user.id)).then(msg => {
-                fs.unlink(outputFile, error => {
-                    if (error) {
-                        console.log(`There was an error deleting ${outputFile}`)
-                    }
+            //TODO call responder singleton instead of context.getTextChannel()
+            textResponder.respond(context, embedder.createRecordingFileEmbed(outputFile, caption, user.id), '',
+                msg => {
+                    fs.unlink(outputFile, error => {
+                        if (error) {
+                            console.log(`There was an error deleting ${outputFile}`)
+                        }
+                    })
                 })
-            })
         })
     }
 
@@ -183,20 +177,6 @@ class AudioHandler {
         }
         this.commandsEventEmitter.emit('playAudioWavStream', context, audioStream.getRecordedStream())
     }
-}
-
-/**
- *
- * @param audioStream
- * @param {string} outputPath
- */
-function writeStreamToWavFile(audioStream, outputPath) {
-    const wavWriter = new wav.FileWriter(`${outputPath}`, {
-        "channels": 2,
-        "sampleRate": 48000,
-        "bitDepth": 16
-    })
-    audioStream.pipe(wavWriter)
 }
 
 /**

@@ -39,6 +39,11 @@ class GuildContext {
         return this.getGuild().id
     }
 
+    /**
+     *
+     * @param {string} name
+     * @returns {GuildMember}
+     */
     getUserFromName(name) {
         const user = this.getGuild().members.cache.find(user => user.displayName === name)
         if (user) {
@@ -107,17 +112,8 @@ class VoiceConnectionMessageContext extends MessageContext {
 }
 
 class GuildAudioContext {
-    constructor(detector) {
+    constructor() {
         this.audioStreams = new Map()
-        this.detector = detector
-    }
-
-    /**
-     *
-     * @returns {Detector}
-     */
-    getDetector() {
-        return this.detector
     }
 
     hasAudioStream(id) {

@@ -1,20 +1,20 @@
 class TextResponder {
     constructor() {
         /** @member {Map<string><Map<string><Message>>} **/
-        this.contextMessagesMap = new Map()
+        this.guildMessagesMap = new Map()
     }
 
     /**
      *
      * @param {MessageContext} context
-     * @returns {Map}
+     * @returns {Map<string><Message>}
      */
-    getMessagesMap(context) {
+    getGuildMessages(context) {
         const guildId = context.getTextChannel().guild.id
-        if (!this.contextMessagesMap.has(guildId)) {
-            this.contextMessagesMap.set(guildId, new Map())
+        if (!this.guildMessagesMap.has(guildId)) {
+            this.guildMessagesMap.set(guildId, new Map())
         }
-        return this.contextMessagesMap.get(guildId)
+        return this.guildMessagesMap.get(guildId)
     }
 
     /**
@@ -22,14 +22,16 @@ class TextResponder {
      * @param {MessageContext} context
      * @param {MessageEmbed} embed
      * @param {string} type
+     * @param callback
      */
-    respond(context, embed, type) {
+    respond(context, embed, type, callback=()=>{}) {
         const textChannel = context.getTextChannel()
         if (textChannel === undefined) {
             return
         }
         textChannel.send(embed).then(msg => {
-            this.getMessagesMap(context).set(type, msg)
+            this.getGuildMessages(context).set(type, msg)
+            callback()
         })
     }
 
@@ -39,7 +41,7 @@ class TextResponder {
      * @param {string} type
      */
     remove(context, type) {
-        const messagesMap = this.getMessagesMap(context)
+        const messagesMap = this.getGuildMessages(context)
         if (!messagesMap.has(type)) {
             return
         }
@@ -71,4 +73,4 @@ class TextResponder {
         textChannel.stopTyping(true)
     }
 }
-module.exports.TextResponder = TextResponder
+module.exports.TextResponder = new TextResponder()
