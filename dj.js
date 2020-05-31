@@ -1,7 +1,6 @@
-const fs = require('fs')
 const ytdl = require('ytdl-core-discord')
 const search = require('./search.js')
-const prism = require('prism-media')
+const audioUtils = require('./audio_utils.js')
 const textResponder = require('./responder.js').TextResponder
 const embedder = require('./embedder.js')
 
@@ -129,7 +128,7 @@ class DJ {
      */
     playAudioAck(context, mode) {
         const file = mode === 0 ? this.siri_ack_start : this.siri_ack_finish
-        const hotwordAckStream = convertMp3ToOpus(file)
+        const hotwordAckStream = audioUtils.convertMp3FileToOpusStream(file)
         this.playAudioEvent(context, hotwordAckStream, 'opus')
     }
 
@@ -157,8 +156,8 @@ class DJ {
         context.getVoiceConnection().play(audioStream, {
             type: type
         }).on('finish', () => {
-            this.playSong(context, currentSong, true)
             context.getVoiceConnection().removeAllListeners('finish')
+            this.playSong(context, currentSong, true)
         })
     }
 
@@ -248,27 +247,6 @@ class DJ {
         queue.songs.shift();
         this.playSong(context, queue.songs[0]);
     }
-}
-
-/**
- *
- * @param {string} inputPath
- * @returns {ReadStream}
- */
-function convertMp3ToOpus(inputPath) {
-    const opus = new prism.opus.Encoder({rate: 48000, channels: 2, frameSize: 960});
-    const transcoder = new prism.FFmpeg({
-        args: [
-            '-analyzeduration', '0',
-            '-loglevel', '0',
-            '-f', 's16le',
-            '-ar', '48000',
-            '-ac', '2',
-        ],
-    });
-    const mp3Stream = fs.createReadStream(inputPath);
-    mp3Stream.pipe(transcoder).pipe(opus)
-    return opus
 }
 
 module.exports.DJ = new DJ()

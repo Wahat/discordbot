@@ -22,6 +22,7 @@
     "node-record-lpcm16": "^1.0.1",
     "prism-media": "^1.2.2",
     "queue": "^6.0.1",
+    "say": "^0.16.0",
     "wav": "^1.0.2",
     "youtube-search": "^1.1.4",
     "ytdl-core": "^2.1.4",

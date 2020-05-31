@@ -19,7 +19,7 @@ function runSpeechRecognition(audioStream, userTag, callback) {
     writeStreamToWavFile(audioStream, outputFile)
     audioStream.on('end', () => {
         const start = Date.now()
-        const pythonProcess = spawn('python', ["./SpeechRecognition/main.py", outputFile]);
+        const pythonProcess = spawn('python', ["./SpeechRecognition/PythonSpeechRecognition/main.py", outputFile]);
         pythonProcess.stdout.on('data', data => {
             callback(data)
         });

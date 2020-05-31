@@ -54,7 +54,7 @@ class CommandHandler {
 
         let commandContext = new ctx.VoiceConnectionMessageContext(msgContext, context.getVoiceConnection())
         // VoiceConnection related commands
-        switch(commandType) {
+        switch(commandType.toLowerCase()) {
             case "play":
                 const args = this.parseStringArgs(commandParams)
                 if (args === "") {

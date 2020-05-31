@@ -1,17 +1,12 @@
-const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
-const ffmpeg = require('fluent-ffmpeg');
-const python = require('./python.js')
+const speechEngine = require('./SpeechRecognition/google.js')
 const snowboy = require('./snowboy.js').Snowboy
 const stream = require('stream')
-const lame = require('node-lame')
-
+const audioUtils = require('./audio_utils.js')
 const ctx = require('./context.js')
 const recorder = require('./recorder.js')
 const embedder = require('./embedder.js')
 const fs = require('fs')
 const textResponder = require('./responder.js').TextResponder
-
-ffmpeg.setFfmpegPath(ffmpegPath);
 
 class AudioHandler {
     constructor() {
@@ -120,7 +115,7 @@ class AudioHandler {
             this.commandsEventEmitter.emit('playAudioAck', context, 0)
             const recognitionStream = new stream.PassThrough()
             recorderStream.pipe(recognitionStream)
-            python.runSpeechRecognition(recognitionStream, user.tag, data => {
+            speechEngine.runSpeechRecognition(recognitionStream, user.tag, data => {
                 console.log(`${user.tag} said ${data}`)
                 this.commandsEventEmitter.emit('command', context, new ctx.MessageContext(user, data.toString()))
             })
@@ -146,7 +141,7 @@ class AudioHandler {
             return
         }
         const outputFile = `./clips/${user.tag}_recorded.mp3`
-        writeStreamToMp3File(audioStream.getBuffer(), outputFile, caption, user.tag, error => {
+        audioUtils.writeStreamToMp3File(audioStream.getBuffer(), outputFile, caption, user.tag, error => {
             if (error) {
                 console.log(`There was an error writing ${outputFile} to mp3: ${error.toString()}`)
                 return
@@ -177,38 +172,6 @@ class AudioHandler {
         }
         this.commandsEventEmitter.emit('playAudioWavStream', context, audioStream.getRecordedStream())
     }
-}
-
-/**
- * Options can be found {@link https://github.com/devowlio/node-lame here}
- * @param {Buffer} audioBuffer
- * @param {string} outputPath
- * @param {string} title
- * @param {string} author
- * @param callback
- */
-function writeStreamToMp3File(audioBuffer, outputPath, title, author, callback) {
-    const encoder = new lame.Lame({
-        "output": outputPath,
-        "raw": true,
-        "sfreq": 48,
-        "bitwidth": 16,
-        "signed": true,
-        "little-endian": true,
-        "mode": 's',
-        "meta": {
-            "title": "Recording",
-            "artist": author,
-        }
-    }).setBuffer(audioBuffer);
-
-    encoder.encode()
-        .then(() => {
-            callback(null)
-        })
-        .catch((error) => {
-            callback(error)
-        });
 }
 
 module.exports.AudioHandler = AudioHandler
