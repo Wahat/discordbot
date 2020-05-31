@@ -98,7 +98,7 @@ class VoiceResponder {
                 return console.error(err)
             }
             audioUtils.convertWavFileToMp3File(outputPath, mp3Path)
-            dj.playAudioEvent(context, audioUtils.openMp3FileToOpusStream(mp3Path), 'opus', ()=>{
+            dj.playAudioEvent(context, audioUtils.convertMp3FileToOpusStream(mp3Path), 'opus', ()=>{
                 fileUtils.deleteFile(outputPath)
                 fileUtils.deleteFile(mp3Path)
             })

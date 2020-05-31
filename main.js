@@ -1,5 +1,5 @@
 const Discord = require('discord.js')
-const Guild = require('./guild.js')
+const Guild = require('./guild.js').GuildHandler
 const Audio = require('./audio.js')
 const Command = require('./command.js')
 const DJ = require('./dj.js').DJ
@@ -22,13 +22,12 @@ client.login(token).then(result => {
     console.log(result)
 });
 
-const guildHandler = new Guild.GuildHandler(client)
 const audioHandler = new Audio.AudioHandler()
 const commandHandler = new Command.CommandHandler(DJ, audioHandler)
 audioHandler.registerCommandsEventEmitter(commandHandler.eventReceiver)
-audioHandler.registerGuildsEventReceiver(guildHandler.eventEmitter)
+audioHandler.registerGuildsEventReceiver(Guild.eventEmitter)
 
-guildHandler.registerJoinListener((context, msgContext) => {
+Guild.registerJoinListener(client, (context, msgContext) => {
     audioHandler.registerConnection(context)
     if (msgContext != null) {
         commandHandler.eventReceiver.emit('command', context, msgContext)

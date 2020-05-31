@@ -18,12 +18,12 @@ function runSpeechRecognition(audioStream, userTag, callback) {
     const outputFile = `./clips/${userTag}.wav`
     audioUtils.writeStreamToWavFile(audioStream, outputFile)
     audioStream.on('end', () => {
-        const start = Date.now()
+        console.time('pythonRecognition')
         const pythonProcess = spawn('python', ["./SpeechRecognition/PythonSpeechRecognition/main.py", outputFile]);
         pythonProcess.stdout.on('data', data => {
             callback(data)
         });
-        console.log(`Finished recording: ${Date.now() - start} seconds`)
+        console.timeEnd('pythonRecognition')
     })
 }
 

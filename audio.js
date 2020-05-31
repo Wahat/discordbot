@@ -1,4 +1,4 @@
-const speechEngine = require('./SpeechRecognition/google.js')
+const speechEngine = require('./SpeechRecognition/python.js')
 const snowboy = require('./snowboy.js').Snowboy
 const stream = require('stream')
 const audioUtils = require('./audio_utils.js')
@@ -7,6 +7,7 @@ const recorder = require('./recorder.js')
 const embedder = require('./embedder.js')
 const fs = require('fs')
 const textResponder = require('./responder.js').TextResponder
+const Guild = require('./guild.js').GuildHandler
 
 class AudioHandler {
     constructor() {
@@ -58,13 +59,23 @@ class AudioHandler {
     registerGuildsEventReceiver(eventReceiver) {
         this.guildsEventReceiver = eventReceiver
         this.guildsEventReceiver.on('userLeftChannel', (guildId, userId) => {
-            const audioContext = this.guilds.get(guildId)
-            if (!audioContext) {
+            const context = Guild.getGuildContextFromId(guildId)
+            if (!context) {
                 return
             }
+            const audioContext = this.getGuildAudioContext(context)
             console.log(`Removing ${userId}`)
             audioContext.removeAudioStream(userId)
             snowboy.remove(guildId, userId)
+        })
+
+        this.guildsEventReceiver.on('userJoinedChannel', (voiceState) => {
+            const context = Guild.getGuildContextFromId(voiceState.guild.id)
+            if (!context || !context.getVoiceConnection()
+                || context.getVoiceConnection().channel.id !== voiceState.channelID) {
+                return
+            }
+            this.startListeningToUser(context, voiceState.member.user)
         })
     }
 
@@ -86,9 +97,13 @@ class AudioHandler {
             if (this.getGuildAudioContext(context).hasAudioStream(user.id) || user.bot) {
                 return
             }
-            console.log(`Registering ${user.tag} => ${user.id}`)
             this.startListeningToUser(context, user)
         })
+
+        connection.channel.members.forEach(member => {
+            this.startListeningToUser(context, member.user)
+        })
+
         connection.on('disconnect', () => {
             console.log(`Disconnecting from ${connection.channel.guild.name}`)
             this.reset(context)
@@ -101,6 +116,7 @@ class AudioHandler {
      * @param {User} user
      */
     startListeningToUser(context, user) {
+        console.log(`Registering ${user.tag} => ${user.id}`)
         const connection = context.getVoiceConnection()
         let audio = connection.receiver.createStream(user, {
             mode: 'pcm',
@@ -112,6 +128,7 @@ class AudioHandler {
         snowboy.recognize(context, user.id, recorderStream, (trigger) => {
             if (this.isListeningToCommand) {
                 console.log('Already listening for a command')
+                return
             }
             this.isListeningToCommand = true
             this.commandsEventEmitter.emit('playAudioAck', context, 0)

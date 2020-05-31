@@ -129,7 +129,7 @@ class DJ {
      */
     playAudioAck(context, mode) {
         const file = mode === 0 ? this.siri_ack_start : this.siri_ack_finish
-        const hotwordAckStream = audioUtils.openMp3FileToOpusStream(file)
+        const hotwordAckStream = audioUtils.convertMp3FileToOpusStream(file)
         this.playAudioEvent(context, hotwordAckStream, 'opus')
     }
 
