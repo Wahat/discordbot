@@ -15,8 +15,8 @@ function runSpeechRecognition(audioStream, userTag, callback) {
 
     const recognizeStream = client
         .streamingRecognize(request)
-        .on('error', error => {
-            console.log(`Error when making gcloud request ${error}`)
+        .on('error', err => {
+            console.error(err)
         })
         .on('data', data => {
             callback(data.results[0].alternatives[0].transcript)

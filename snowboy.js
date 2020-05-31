@@ -39,7 +39,7 @@ class Snowboy {
      *
      * @param {GuildContext} context
      * @param {string} userId
-     * @param {ReadableStream} input
+     * @param {Recorder | Transform} input
      * @param callback
      */
     recognize(context, userId, input, callback) {

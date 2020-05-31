@@ -2,6 +2,7 @@ const ytdl = require('ytdl-core-discord')
 const search = require('./search.js')
 const audioUtils = require('./audio_utils.js')
 const textResponder = require('./responder.js').TextResponder
+const voiceResponder = require('./responder.js').VoiceResponder
 const embedder = require('./embedder.js')
 
 class DJ {
@@ -128,7 +129,7 @@ class DJ {
      */
     playAudioAck(context, mode) {
         const file = mode === 0 ? this.siri_ack_start : this.siri_ack_finish
-        const hotwordAckStream = audioUtils.convertMp3FileToOpusStream(file)
+        const hotwordAckStream = audioUtils.openMp3FileToOpusStream(file)
         this.playAudioEvent(context, hotwordAckStream, 'opus')
     }
 
@@ -146,8 +147,9 @@ class DJ {
      * @param {VoiceConnectionMessageContext} context
      * @param {ReadableStream} audioStream
      * @param {string} type
+     * @param callback
      */
-    playAudioEvent(context, audioStream, type) {
+    playAudioEvent(context, audioStream, type, callback=()=>{}) {
         const currentSong = this.getGuildQueue(context).songs[0]
         if (currentSong && currentSong.stream) {
             currentSong.stream.unpipe()
@@ -158,6 +160,7 @@ class DJ {
         }).on('finish', () => {
             context.getVoiceConnection().removeAllListeners('finish')
             this.playSong(context, currentSong, true)
+            callback()
         })
     }
 
@@ -225,6 +228,7 @@ class DJ {
             .on('start', () => {
                 if (!resume) {
                     textResponder.respond(context, embedder.createNowPlayingEmbed(song), 'play')
+                    voiceResponder.respond(this, context, `Playing ${song.title}`)
                 }
             })
             .on('finish', () => {

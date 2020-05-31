@@ -2,7 +2,12 @@ const stream = require('stream')
 const lame = require('node-lame')
 const prism = require('prism-media')
 const fs = require('fs')
+const wav = require('wav')
 
+/**
+ *
+ * @returns {WritableStream | ReadableStream | TransformStream | module:stream.internal.Transform}
+ */
 function createStereoToMonoTransformStream() {
     const stereoToMonoTransformer = new stream.Transform({objectMode: true})
     stereoToMonoTransformer._transform = function (chunk, encoding, done) {
@@ -30,7 +35,6 @@ function convertStereoToMono(buffer) {
     }
     return newBuffer
 }
-
 
 
 /**
@@ -69,9 +73,9 @@ function writeStreamToMp3File(audioBuffer, outputPath, title, author, callback) 
 /**
  *
  * @param {string} inputPath
- * @returns {ReadStream}
+ * @returns {ReadableStream}
  */
-function convertMp3FileToOpusStream(inputPath) {
+function openMp3FileToOpusStream(inputPath) {
     const opus = new prism.opus.Encoder({rate: 48000, channels: 2, frameSize: 960});
     const transcoder = new prism.FFmpeg({
         args: [
@@ -87,8 +91,33 @@ function convertMp3FileToOpusStream(inputPath) {
     return opus
 }
 
+/**
+ *
+ * @param audioStream
+ * @param {string} outputPath
+ */
+function writeStreamToWavFile(audioStream, outputPath) {
+    const wavWriter = new wav.FileWriter(`${outputPath}`, {
+        "channels": 2,
+        "sampleRate": 48000,
+        "bitDepth": 16
+    })
+    audioStream.pipe(wavWriter)
+}
 
+const spawn = require('child_process')
+/**
+ *
+ * @param inputPath
+ * @param outputPath
+ * @param callback
+ */
+function convertWavFileToMp3File(inputPath, outputPath, callback) {
+    spawn.execSync(`ffmpeg -i ${inputPath} -ac 2 -ar 48000 -vn -b:a 192k ${outputPath}`)
+}
 
 module.exports.createStereoToMonoTransformStream = createStereoToMonoTransformStream
 module.exports.writeStreamToMp3File = writeStreamToMp3File
-module.exports.convertMp3FileToOpusStream = convertMp3FileToOpusStream
+module.exports.openMp3FileToOpusStream = openMp3FileToOpusStream
+module.exports.writeStreamToWavFile = writeStreamToWavFile
+module.exports.convertWavFileToMp3File = convertWavFileToMp3File

@@ -16,6 +16,12 @@ class GuildHandler {
         this.discordContexts = new Map()
     }
 
+    /**
+     *
+     * @param {VoiceConnection} connection
+     * @param {TextChannel} textChannel
+     * @returns {GuildAudioContext}
+     */
     getGuildContext(connection, textChannel) {
         const guild = textChannel.guild ? textChannel.guild : connection.channel.guild
         if (!this.discordContexts.has(guild.id)) {
@@ -41,6 +47,10 @@ class GuildHandler {
         this.registerJoinOnMessage(callback)
     }
 
+    /**
+     *
+     * @param callback
+     */
     registerJoinOnJoin(callback) {
         this.client.on('voiceStateUpdate', (oldState, newState) => {
             if (!hasUserJoinedChannel(oldState, newState)) {

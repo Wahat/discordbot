@@ -14,7 +14,9 @@ class AudioHandler {
         this.guilds = new Map()
         /** @member {boolean} **/
         this.isListeningToCommand = false
+        /** @member {EventEmitter | module:events.internal.EventEmitter} **/
         this.guildsEventReceiver = null
+        /** @member {EventEmitter | module:events.internal.EventEmitter} **/
         this.commandsEventEmitter = null
     }
 
@@ -43,7 +45,7 @@ class AudioHandler {
 
     /**
      *
-     * @param {EventEmitter} eventEmitter
+     * @param {EventEmitter | module:events.internal.EventEmitter} eventEmitter
      */
     registerCommandsEventEmitter(eventEmitter) {
         this.commandsEventEmitter = eventEmitter
@@ -51,7 +53,7 @@ class AudioHandler {
 
     /**
      *
-     * @param {EventEmitter} eventReceiver
+     * @param {EventEmitter | module:events.internal.EventEmitter} eventReceiver
      */
     registerGuildsEventReceiver(eventReceiver) {
         this.guildsEventReceiver = eventReceiver
@@ -141,9 +143,9 @@ class AudioHandler {
             return
         }
         const outputFile = `./clips/${user.tag}_recorded.mp3`
-        audioUtils.writeStreamToMp3File(audioStream.getBuffer(), outputFile, caption, user.tag, error => {
-            if (error) {
-                console.log(`There was an error writing ${outputFile} to mp3: ${error.toString()}`)
+        audioUtils.writeStreamToMp3File(audioStream.getBuffer(), outputFile, caption, user.tag, err => {
+            if (err) {
+                console.err(`There was an error writing ${outputFile} to mp3: ${err.toString()}`)
                 return
             }
             //TODO call responder singleton instead of context.getTextChannel()

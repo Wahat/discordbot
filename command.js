@@ -12,6 +12,7 @@ class CommandHandler {
         this.dj = dj
         /** @member {AudioHandler} **/
         this.audioHandler = audioHandler
+        /** @member {EventEmitter | module:events.internal.EventEmitter} **/
         this.eventReceiver = new events.EventEmitter()
 
         this.eventReceiver.on('playAudioAck', (context, mode) => {
@@ -47,16 +48,14 @@ class CommandHandler {
         const commandType = args[0]
         args.shift()
         const commandParams = args
-
         if (!msgContext.getTextChannel()) {
             msgContext.setTextChannel(context.getTextChannel())
         }
-
         let commandContext = new ctx.VoiceConnectionMessageContext(msgContext, context.getVoiceConnection())
         // VoiceConnection related commands
         switch(commandType.toLowerCase()) {
             case "play":
-                const args = this.parseStringArgs(commandParams)
+                const args = this.parseStringArgsToString(commandParams)
                 if (args === "") {
                     return
                 }
@@ -95,7 +94,7 @@ class CommandHandler {
                 this.dj.volume(commandContext, 200, true)
                 break
             case 'record':
-                const recordUserName = this.parseStringArgs(commandParams)
+                const recordUserName = this.parseStringArgsToString(commandParams)
                 const recordUser = context.getUserFromName(recordUserName)
                 if (!recordUser) {
                     return
@@ -103,23 +102,20 @@ class CommandHandler {
                 this.audioHandler.recordUserToFile(commandContext, recordUser.user, `${recordUser.displayName} said`, 0)
                 break
             case 'replay':
-                const replayUserName = this.parseStringArgs(commandParams)
+                const replayUserName = this.parseStringArgsToString(commandParams)
                 const replayUser = context.getUserFromName(replayUserName)
                 if (!replayUser) {
                     return
                 }
                 this.audioHandler.replayUser(commandContext, replayUser.user, 0)
                 break
+            case 'say':
+                const voice = commandParams.shift()
+                const message = this.parseStringArgsToString(commandParams)
+                const VoiceResponder = require('./responder.js').VoiceResponder
+                VoiceResponder.respond(this.dj, commandContext, message, voice)
+                break
         }
-    }
-
-    /**
-     *
-     * @param {GuildContext} context
-     * @param {MessageContext} msgContext
-     */
-    determineReplyChannel(context, msgContext) {
-        return msgContext.getTextChannel() ? msgContext.getTextChannel() : context.getTextChannel()
     }
 
     /**
@@ -149,7 +145,7 @@ class CommandHandler {
      * @param {string[]} args
      * @returns {string}
      */
-    parseStringArgs(args) {
+    parseStringArgsToString(args) {
         if (args.length < 1) {
             return ""
         }

@@ -73,4 +73,40 @@ class TextResponder {
         textChannel.stopTyping(true)
     }
 }
+
+const say = require('say')
+const audioUtils = require('./audio_utils.js')
+const fileUtils = require('./file_utils.js')
+class VoiceResponder {
+    constructor() {
+
+    }
+
+    /**
+     * List of mac voices https://gist.github.com/mculp/4b95752e25c456d425c6
+     * @param {DJ} dj
+     * @param {VoiceConnectionMessageContext} context
+     * @param message
+     * @param voice
+     * @param callback
+     */
+    respond(dj, context, message, voice='Samantha', callback=()=>{}) {
+        const outputPath = './clips/speechToText.wav'
+        const mp3Path = './clips/speechToText.mp3'
+        say.export(message, voice, 1, outputPath, err => {
+            if (err) {
+                return console.error(err)
+            }
+            audioUtils.convertWavFileToMp3File(outputPath, mp3Path)
+            dj.playAudioEvent(context, audioUtils.openMp3FileToOpusStream(mp3Path), 'opus', ()=>{
+                fileUtils.deleteFile(outputPath)
+                fileUtils.deleteFile(mp3Path)
+            })
+            callback()
+        })
+    }
+}
+
+
 module.exports.TextResponder = new TextResponder()
+module.exports.VoiceResponder = new VoiceResponder()
