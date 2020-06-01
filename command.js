@@ -1,7 +1,7 @@
 const events = require('events')
 const ctx = require('./context.js')
 const textResponder = require('./responder.js').TextResponder
-const embedder = require('./embedder')
+const embedder = require('./embedder').Embedder
 
 class CommandHandler {
     /**
@@ -48,7 +48,11 @@ class CommandHandler {
             if (yargs['h']) {
                 textResponder.respond(msgContext,
                     embedder.createCommandHelpEmbed(context.getConfig()["commands"][commandType]),
-                    "help")
+                    `${commandType}_help`, () => {
+                        setTimeout(() => {
+                            textResponder.remove(msgContext, `${commandType}_help`)
+                        }, 10000)
+                    })
                 return
             }
             commandArgs.forEach(commandArg => {

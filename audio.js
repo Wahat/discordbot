@@ -4,7 +4,7 @@ const stream = require('stream')
 const audioUtils = require('./audio_utils.js')
 const ctx = require('./context.js')
 const recorder = require('./recorder.js')
-const embedder = require('./embedder.js')
+const embedder = require('./embedder.js').Embedder
 const fs = require('fs')
 const textResponder = require('./responder.js').TextResponder
 const Guild = require('./guild.js').GuildHandler
@@ -39,8 +39,9 @@ class AudioHandler {
      *
      * @param {GuildContext} context
      */
-    reset(context) {
+    resetGuild(context) {
         this.getGuildAudioContext(context).clearAudioStreams()
+        snowboy.clearDetectors()
         this.guilds.delete(context.getGuildId())
     }
 
@@ -69,7 +70,7 @@ class AudioHandler {
             snowboy.remove(guildId, userId)
         })
         //
-        // this.guildsEventReceiver.on('userJoinedChannel', (voiceState) => {
+        // this.guildsEventReceiver.on('userJoinedChannel', voiceState => {
         //     const context = Guild.getGuildContextFromId(voiceState.guild.id)
         //     if (!context || !context.getVoiceConnection()
         //         || context.getVoiceConnection().channel.id !== voiceState.channelID) {
@@ -77,6 +78,10 @@ class AudioHandler {
         //     }
         //     this.startListeningToUser(context, voiceState.member.user)
         // })
+
+        this.guildsEventReceiver.on('userChangedChannel', voiceState => {
+
+        })
     }
 
     /**
@@ -88,6 +93,8 @@ class AudioHandler {
         if (this.guilds.has(context.getGuildId())) {
             return
         }
+        connection.play(audioUtils.createSilenceStream(), { type: "opus" }); // This is required for the bot to be able to listen
+        connection.dispatcher.destroy()
         this.getGuildAudioContext(context)
         connection.on('speaking', (user, speaking) => {
             if (user === undefined) {
@@ -105,9 +112,25 @@ class AudioHandler {
         //     this.startListeningToUser(context, member.user)
         // })
 
+        connection.on('ready', () => {
+            console.log('Connection ready')
+        })
+
+        connection.on('newSession', () => {
+            console.log('New Session')
+        })
+
+        connection.on('warning', warning => {
+            console.log(`Warning: ${warning}`)
+        })
+
+        connection.on('error', err => {
+            console.log(`Error: ${err.name}, ${err.message}`)
+        })
+
         connection.on('disconnect', () => {
             console.log(`Disconnecting from ${connection.channel.guild.name}`)
-            this.reset(context)
+            this.resetGuild(context)
         })
     }
 
@@ -137,7 +160,8 @@ class AudioHandler {
             recorderStream.pipe(recognitionStream)
             speechEngine.runSpeechRecognition(recognitionStream, user.tag, data => {
                 console.log(`${user.tag} said ${data}`)
-                this.commandsEventEmitter.emit('command', context, new ctx.MessageContext(user, data.toString()))
+                this.commandsEventEmitter.emit('command', context, new ctx.MessageContext(user, data.toString(),
+                    context.getTextChannel()))
             })
             setTimeout(() => {
                 recognitionStream.end()

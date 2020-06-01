@@ -37,6 +37,17 @@ class Snowboy {
 
     /**
      *
+     * @param guildId
+     */
+    clearDetectors(guildId) {
+        const detectors = this.guildDetectorsMap.get(guildId)
+        if (detectors) {
+            detectors.clear()
+        }
+    }
+
+    /**
+     *
      * @param {GuildContext} context
      * @param {string} userId
      * @param {Recorder | Transform} input

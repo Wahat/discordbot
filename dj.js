@@ -3,7 +3,7 @@ const search = require('./search.js')
 const audioUtils = require('./audio_utils.js')
 const textResponder = require('./responder.js').TextResponder
 const voiceResponder = require('./responder.js').VoiceResponder
-const embedder = require('./embedder.js')
+const embedder = require('./embedder.js').Embedder
 
 class DJ {
     siri_ack_start = './resources/siri_acknowledge.mp3'
@@ -21,7 +21,7 @@ class DJ {
      */
     getGuildQueue(context) {
         const guildId = context.getVoiceConnection().channel.guild.id
-        if(!this.guildQueues.has(guildId)) {
+        if (!this.guildQueues.has(guildId)) {
             const queueObject = {
                 connection: context.getVoiceConnection(),
                 songs: [],
@@ -39,7 +39,7 @@ class DJ {
      * @param {int} volume
      * @param relative
      */
-    volume(context, volume, relative=false) {
+    volume(context, volume, relative = false) {
         const queue = this.getGuildQueue(context)
         if (relative) {
             const prevVolume = queue.volume * 100
@@ -156,7 +156,8 @@ class DJ {
      * @param {string} type
      * @param callback
      */
-    playAudioEvent(context, audioStream, type, callback=()=>{}) {
+    playAudioEvent(context, audioStream, type, callback = () => {
+    }) {
         const currentSong = this.getGuildQueue(context).songs[0]
         if (currentSong && currentSong.stream) {
             currentSong.stream.unpipe()

@@ -45,7 +45,7 @@ class GuildHandler {
      * @param {Client} client
      * @param {onJoinedCallback} callback
      */
-    registerJoinListener(client, callback) {
+    registerWhenToJoinListener(client, callback) {
         this.registerJoinOnJoin(client, callback)
         this.registerJoinOnMessage(client, callback)
     }

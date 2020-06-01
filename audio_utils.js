@@ -6,6 +6,18 @@ const wav = require('wav')
 
 /**
  *
+ * @returns {Readable | module:stream.internal.Readable}
+ */
+function createSilenceStream() {
+    const silenceReadable = new stream.Readable()
+    silenceReadable._read = function(size) {
+        this.push(Buffer.from([0xf8, 0xff, 0xfe]))
+    }
+    return silenceReadable
+}
+
+/**
+ *
  * @returns {WritableStream | ReadableStream | TransformStream | module:stream.internal.Transform}
  */
 function createStereoToMonoTransformStream() {
@@ -116,6 +128,7 @@ function convertWavFileToMp3File(inputPath, outputPath, callback) {
     spawn.execSync(`ffmpeg -i ${inputPath} -ac 2 -ar 48000 -vn -b:a 192k ${outputPath}`)
 }
 
+module.exports.createSilenceStream = createSilenceStream
 module.exports.createStereoToMonoTransformStream = createStereoToMonoTransformStream
 module.exports.writeStreamToMp3File = writeStreamToMp3File
 module.exports.convertMp3FileToOpusStream = convertMp3FileToOpusStream

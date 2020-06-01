@@ -1,85 +1,104 @@
 const Discord = require('discord.js')
 
-function getBaseEmbed() {
-    return new Discord.MessageEmbed()
-        .setColor([46, 115, 189])
-}
-
-function createNowPlayingEmbed(song) {
-    return getBaseEmbed()
-        .setTitle("Now Playing")
-        .setDescription(`[${song.title}](${song.url}) [<@${song.requesterId}>]`)
-        .setThumbnail(song.thumbnail_url)
-}
-
-/**
- *
- * @param {Object} song
- * @param {Array} queue
- * @return {MessageEmbed}
- */
-function createQueueEmbed(queue, song) {
-    if (queue.length === 0) {
-        return createErrorEmbed('Queue is empty')
+class Embedder {
+    /**
+     *
+     * @returns {module:"discord.js".MessageEmbed}
+     */
+    getBaseEmbed() {
+        return new Discord.MessageEmbed()
+            .setColor([46, 115, 189])
     }
-    let queueString = ""
-    queue.forEach(song => {
-        queueString += `${song.title}\t\t${song.length}s\n`
-    })
-    const newlyQueued = song == null ? "" : `<@${song.requesterId}> queued: [${song.title}](${song.url})`
-    return getBaseEmbed()
-        .setTitle('Queued')
-        .setDescription(`${newlyQueued}\n\`\`\`\n${queueString}\`\`\``)
-}
 
-/**
- *
- * @param {Array} queue
- * @param {int} index
- */
-function createSongDetailsEmbed( queue, index) {
-    if (index < 0 || !queue[index]) {
-        return createErrorEmbed('Invalid index provided')
+    /**
+     *
+     * @param song
+     * @returns {MessageEmbed}
+     */
+    createNowPlayingEmbed(song) {
+        return this.getBaseEmbed()
+            .setTitle("Now Playing")
+            .setDescription(`[${song.title}](${song.url}) [<@${song.requesterId}>]`)
+            .setThumbnail(song.thumbnail_url)
     }
-    const song = queue[index]
-    const title = index === 0 ? 'Current Song' : `Song ${index}`
-    return getBaseEmbed()
-        .setTitle(title)
-        .setDescription(`[${song.title}](${song.url}) queued [<@${song.requesterId}>]`)
-}
 
-function createRecordingFileEmbed(filePath, caption, userId) {
-    const messageAttachment = new Discord.MessageAttachment(filePath, `${caption}.mp3`)
-    return getBaseEmbed()
-        .setDescription(`Recording from [<@${userId}>]`)
-        .attachFiles(messageAttachment)
-}
-
-function createCommandHelpEmbed(command) {
-    const fields = []
-    command.args.forEach(arg => {
-        fields.push({
-            name: arg.name,
-            value: arg.description
+    /**
+     *
+     * @param {Object} song
+     * @param {Array} queue
+     * @return {MessageEmbed}
+     */
+    createQueueEmbed(queue, song) {
+        if (queue.length === 0) {
+            return this.createErrorEmbed('Queue is empty')
+        }
+        let queueString = ""
+        queue.forEach(song => {
+            queueString += `${song.title}\t\t${song.length}s\n`
         })
-    })
-    return getBaseEmbed()
-        .setDescription(command.description)
-        .addFields(fields)
+        const newlyQueued = song == null ? "" : `<@${song.requesterId}> queued: [${song.title}](${song.url})`
+        return this.getBaseEmbed()
+            .setTitle('Queued')
+            .setDescription(`${newlyQueued}\n\`\`\`\n${queueString}\`\`\``)
+    }
+
+    /**
+     *
+     * @param {Array} queue
+     * @param {int} index
+     */
+    createSongDetailsEmbed(queue, index) {
+        if (index < 0 || !queue[index]) {
+            return this.createErrorEmbed('Invalid index provided')
+        }
+        const song = queue[index]
+        const title = index === 0 ? 'Current Song' : `Song ${index}`
+        return this.getBaseEmbed()
+            .setTitle(title)
+            .setDescription(`[${song.title}](${song.url}) queued [<@${song.requesterId}>]`)
+    }
+
+    /**
+     *
+     * @param {string} filePath
+     * @param {string} caption
+     * @param {string} userId
+     * @returns {MessageEmbed}
+     */
+    createRecordingFileEmbed(filePath, caption, userId) {
+        const messageAttachment = new Discord.MessageAttachment(filePath, `${caption}.mp3`)
+        return this.getBaseEmbed()
+            .setDescription(`Recording from [<@${userId}>]`)
+            .attachFiles(messageAttachment)
+    }
+
+    /**
+     *
+     * @param {object} command
+     * @returns {MessageEmbed}
+     */
+    createCommandHelpEmbed(command) {
+        const fields = []
+        command["args"].forEach(arg => {
+            let flag = arg["flag"] === '_' ? '' : `-${arg["flag"]}:`
+            fields.push({
+                name: arg["name"],
+                value: `${flag}${arg["description"]}`
+            })
+        })
+        return this.getBaseEmbed()
+            .setDescription(command["description"])
+            .addFields(fields)
+    }
+
+    /**
+     *
+     * @param {string} message
+     */
+    createErrorEmbed(message) {
+        return this.getBaseEmbed()
+            .setDescription(`\`\`\`${message}\`\`\``)
+    }
 }
 
-/**
- *
- * @param {string} message
- */
-function createErrorEmbed(message) {
-    return getBaseEmbed()
-        .setDescription(`\`\`\`${message}\`\`\``)
-}
-
-module.exports.createNowPlayingEmbed = createNowPlayingEmbed
-module.exports.createQueueEmbed = createQueueEmbed
-module.exports.createErrorEmbed = createErrorEmbed
-module.exports.createSongDetailsEmbed = createSongDetailsEmbed
-module.exports.createRecordingFileEmbed = createRecordingFileEmbed
-module.exports.createCommandHelpEmbed = createCommandHelpEmbed
+module.exports.Embedder = new Embedder()
