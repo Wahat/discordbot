@@ -1,5 +1,7 @@
+const configHandler = require('./config.js').ConfigHandler
+
 class GuildContext {
-    constructor(configHandler, voiceConnection, textChannel) {
+    constructor(voiceConnection, textChannel) {
         /** @member {VoiceConnection} **/
         this.voiceConnection = voiceConnection
         /** @member {TextChannel} **/
@@ -25,6 +27,14 @@ class GuildContext {
 
     /**
      *
+     * @returns {any}
+     */
+    getConfig() {
+        return this.config
+    }
+
+    /**
+     *
      * @returns {Guild}
      */
     getGuild() {
@@ -37,19 +47,6 @@ class GuildContext {
      */
     getGuildId() {
         return this.getGuild().id
-    }
-
-    /**
-     *
-     * @param {string} name
-     * @returns {GuildMember}
-     */
-    getUserFromName(name) {
-        const user = this.getGuild().members.cache.find(user => user.displayName === name)
-        if (user) {
-            console.log(`Found user ${user.displayName}`)
-        }
-        return user
     }
 }
 
@@ -108,6 +105,19 @@ class VoiceConnectionMessageContext extends MessageContext {
      */
     getVoiceConnection() {
         return this.voiceConnection
+    }
+
+    /**
+     *
+     * @param {string} name
+     * @returns {GuildMember}
+     */
+    getUserFromName(name) {
+        const user = this.voiceConnection.channel.members.find(user => user.displayName === name)
+        if (user) {
+            console.log(`Found user ${user.displayName}`)
+        }
+        return user
     }
 }
 

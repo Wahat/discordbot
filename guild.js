@@ -1,11 +1,9 @@
 const ctx = require('./context.js')
 const events = require('events')
-const config = require('./config.js')
 
 class GuildHandler {
     constructor() {
         this.eventEmitter = new events.EventEmitter()
-        this.configHandler = new config.ConfigHandler()
 
         /** @member {Map<string><GuildContext>} **/
         this.guildContexts = new Map()
@@ -30,7 +28,7 @@ class GuildHandler {
         const guild = textChannel.guild ? textChannel.guild : connection.channel.guild
         if (!this.guildContexts.has(guild.id)) {
             this.guildContexts.set(guild.id,
-                new ctx.GuildContext(this.configHandler, connection, textChannel))
+                new ctx.GuildContext(connection, textChannel))
         }
         return this.guildContexts.get(guild.id)
     }
@@ -143,10 +141,10 @@ class GuildHandler {
 
     /**
      *
-     * @param {Guild} guild
+     * @param {string} guildId
      * @returns {string}
      */
-    findPrefix(guild) {
+    findPrefix(guildId) {
         return '?'
     }
 }

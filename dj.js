@@ -23,7 +23,6 @@ class DJ {
         const guildId = context.getVoiceConnection().channel.guild.id
         if(!this.guildQueues.has(guildId)) {
             const queueObject = {
-                voiceChannel: context.getVoiceConnection().channel,
                 connection: context.getVoiceConnection(),
                 songs: [],
                 volume: 0.25,
@@ -47,7 +46,9 @@ class DJ {
             volume = prevVolume * (volume / 100)
         }
         const newVolume = volume / 100
-        queue.connection.dispatcher.setVolume(newVolume);
+        if (queue.connection.dispatcher) {
+            queue.connection.dispatcher.setVolume(newVolume);
+        }
         queue.volume = newVolume
     }
 
@@ -93,7 +94,9 @@ class DJ {
         queue.songs = [];
 
         //TODO: show message
-        queue.connection.dispatcher.end();
+        if (queue.connection.dispatcher) {
+            queue.connection.dispatcher.end();
+        }
     }
 
     /**
@@ -120,6 +123,10 @@ class DJ {
         }
         // TODO: show message
         queue.connection.dispatcher.resume()
+    }
+
+    say(context, message, voice) {
+        voiceResponder.respond(this, context, message, voice)
     }
 
     /**

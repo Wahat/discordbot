@@ -1,5 +1,7 @@
 const events = require('events')
 const ctx = require('./context.js')
+const textResponder = require('./responder.js').TextResponder
+const embedder = require('./embedder')
 
 class CommandHandler {
     /**
@@ -12,7 +14,7 @@ class CommandHandler {
         this.dj = dj
         /** @member {AudioHandler} **/
         this.audioHandler = audioHandler
-        /** @member {EventEmitter | module:events.internal.EventEmitter} **/
+        /** @member {EventEmitter | module:events.EventEmitter.EventEmitter} **/
         this.eventReceiver = new events.EventEmitter()
 
         this.eventReceiver.on('playAudioAck', (context, mode) => {
@@ -37,120 +39,56 @@ class CommandHandler {
      * @param {GuildContext} context
      * @param {MessageContext} msgContext
      */
-    onCommandReceived(context,  msgContext) {
-        const input = msgContext.getMessage()
-        const command = this.parseCommand(input)
-        if (command === '') {
-            console.log(`Invalid Command: ${input}`)
-            return
-        }
-        const args = command.split(' ')
-        const commandType = args[0]
-        args.shift()
-        const commandParams = args
-        if (!msgContext.getTextChannel()) {
-            msgContext.setTextChannel(context.getTextChannel())
-        }
-        let commandContext = new ctx.VoiceConnectionMessageContext(msgContext, context.getVoiceConnection())
-        // VoiceConnection related commands
-        switch(commandType.toLowerCase()) {
-            case "play":
-                const args = this.parseStringArgsToString(commandParams)
-                if (args === "") {
-                    return
+    onCommandReceived(context, msgContext) {
+        const yargs = require('yargs-parser')(msgContext.getMessage())
+        const commandType = parseCommand(yargs['_'].shift())
+        if (context.getConfig().commands[commandType]) {
+            const commandArgs = context.getConfig()["commands"][commandType]["args"]
+            const parsedArgs = {}
+            if (yargs['h']) {
+                textResponder.respond(msgContext,
+                    embedder.createCommandHelpEmbed(context.getConfig()["commands"][commandType]),
+                    "help")
+                return
+            }
+            commandArgs.forEach(commandArg => {
+                parsedArgs[commandArg["name"]] = commandArg["flag"] === "_" && yargs[commandArg["flag"]]
+                    ? yargs[commandArg["flag"]].join(' ') : yargs[commandArg["flag"]]
+                if (commandArg["required"] && !parsedArgs[commandArg["name"]]) {
+                    textResponder.respond(msgContext,
+                        embedder.createErrorEmbed(
+                            `${commandType} requires ${commandArg["name"]} parameter (${commandArg["flag"]})`)
+                        , "error")
                 }
-                this.dj.play(commandContext, args)
-                break
-            case 'skip':
-                this.dj.skip(commandContext)
-                break
-            case 'stop':
-                this.dj.stop(commandContext)
-                break
-            case 'pause':
-                this.dj.pause(commandContext)
-                break
-            case 'resume':
-                this.dj.resume(commandContext)
-                break
-            case 'volume':
-                const volume = this.parseSingleInteger(commandParams)
-                if (volume < 0) {
-                    return
+                if (commandArg["integer"] && !isNumeric(parsedArgs[commandArg["name"]])) {
+                    embedder.createErrorEmbed(
+                        `${commandArg["name"]} parameter must be integer`, "error")
+                } else if (commandArg["integer"]) {
+                    parsedArgs[commandArg["name"]] = parseInt(parsedArgs[commandArg["name"]])
                 }
-                this.dj.volume(commandContext, volume)
-                break
-            case 'queue':
-                this.dj.queue(commandContext)
-                break
-            case 'song':
-                const index = this.parseSingleInteger(commandParams, 0)
-                this.dj.song(commandContext, index)
-                break
-            case 'lower':
-                this.dj.volume(commandContext, 50, true)
-                break
-            case 'higher':
-                this.dj.volume(commandContext, 200, true)
-                break
-            case 'record':
-                const recordUserName = this.parseStringArgsToString(commandParams)
-                const recordUser = context.getUserFromName(recordUserName)
-                if (!recordUser) {
-                    return
+            })
+            const commandExec = context.getConfig()["commands"][commandType]["command"]
+            const execArgs = []
+            commandExec['args'].forEach(arg => {
+                let parsedArg = parsedArgs[arg]
+                if (parsedArg == null && !commandArgs.find(commandArg => commandArg["name"] === arg)) {
+                    parsedArg = arg
                 }
-                this.audioHandler.recordUserToFile(commandContext, recordUser.user, `${recordUser.displayName} said`, 0)
-                break
-            case 'replay':
-                const replayUserName = this.parseStringArgsToString(commandParams)
-                const replayUser = context.getUserFromName(replayUserName)
-                if (!replayUser) {
-                    return
-                }
-                this.audioHandler.replayUser(commandContext, replayUser.user, 0)
-                break
-            case 'say':
-                const voice = commandParams.shift()
-                const message = this.parseStringArgsToString(commandParams)
-                const VoiceResponder = require('./responder.js').VoiceResponder
-                VoiceResponder.respond(this.dj, commandContext, message, voice)
-                break
+                execArgs.push(parsedArg)
+            })
+            let commandContext = new ctx.VoiceConnectionMessageContext(msgContext, context.getVoiceConnection())
+            this[commandExec['handler']][commandExec['name']](commandContext, ...execArgs)
         }
     }
+}
 
-    /**
-     * @param {string} input
-     * @returns {string}
-     */
-    parseCommand(input) {
-        input = input.trim()
-        return input
-    }
-
-    /**
-     *
-     * @param {string[]} args
-     * @param defaultVal
-     * @return {int}
-     */
-    parseSingleInteger(args, defaultVal=-1) {
-        if (args.length !== 1 || !isNumeric(args[0])) {
-            return defaultVal
-        }
-        return parseInt(args[0])
-    }
-
-    /**
-     *
-     * @param {string[]} args
-     * @returns {string}
-     */
-    parseStringArgsToString(args) {
-        if (args.length < 1) {
-            return ""
-        }
-        return args.join(' ')
-    }
+/**
+ * @param {string} input
+ * @returns {string}
+ */
+function parseCommand(input) {
+    input = input.trim()
+    return input
 }
 
 /**

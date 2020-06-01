@@ -68,15 +68,15 @@ class AudioHandler {
             audioContext.removeAudioStream(userId)
             snowboy.remove(guildId, userId)
         })
-
-        this.guildsEventReceiver.on('userJoinedChannel', (voiceState) => {
-            const context = Guild.getGuildContextFromId(voiceState.guild.id)
-            if (!context || !context.getVoiceConnection()
-                || context.getVoiceConnection().channel.id !== voiceState.channelID) {
-                return
-            }
-            this.startListeningToUser(context, voiceState.member.user)
-        })
+        //
+        // this.guildsEventReceiver.on('userJoinedChannel', (voiceState) => {
+        //     const context = Guild.getGuildContextFromId(voiceState.guild.id)
+        //     if (!context || !context.getVoiceConnection()
+        //         || context.getVoiceConnection().channel.id !== voiceState.channelID) {
+        //         return
+        //     }
+        //     this.startListeningToUser(context, voiceState.member.user)
+        // })
     }
 
     /**
@@ -100,9 +100,10 @@ class AudioHandler {
             this.startListeningToUser(context, user)
         })
 
-        connection.channel.members.forEach(member => {
-            this.startListeningToUser(context, member.user)
-        })
+        //
+        // connection.channel.members.forEach(member => {
+        //     this.startListeningToUser(context, member.user)
+        // })
 
         connection.on('disconnect', () => {
             console.log(`Disconnecting from ${connection.channel.guild.name}`)
@@ -149,11 +150,15 @@ class AudioHandler {
     /**
      *
      * @param {VoiceConnectionMessageContext} context
-     * @param {User} user
+     * @param {string} userName
      * @param {string} caption
      * @param length
      */
-    recordUserToFile(context, user, caption, length) {
+    recordUserToFile(context, userName, caption="Clip", length) {
+        const user = context.getUserFromName(userName)
+        if (!user) {
+            return
+        }
         const audioStream = this.getGuildAudioContext(context).getAudioStream(user.id)
         if (audioStream == null) {
             console.log(`No audioStream for ${user.tag}`)
@@ -180,10 +185,14 @@ class AudioHandler {
     /**
      *
      * @param {VoiceConnectionMessageContext} context
-     * @param {User} user
+     * @param {string} userName
      * @param length
      */
-    replayUser(context, user, length) {
+    replayUser(context, userName, length) {
+        const user = context.getUserFromName(userName)
+        if (!user) {
+            return
+        }
         const audioStream = this.getGuildAudioContext(context).getAudioStream(user.id)
         if (audioStream == null) {
             console.log(`No audioStream for ${user.tag}`)

@@ -55,6 +55,19 @@ function createRecordingFileEmbed(filePath, caption, userId) {
         .attachFiles(messageAttachment)
 }
 
+function createCommandHelpEmbed(command) {
+    const fields = []
+    command.args.forEach(arg => {
+        fields.push({
+            name: arg.name,
+            value: arg.description
+        })
+    })
+    return getBaseEmbed()
+        .setDescription(command.description)
+        .addFields(fields)
+}
+
 /**
  *
  * @param {string} message
@@ -69,3 +82,4 @@ module.exports.createQueueEmbed = createQueueEmbed
 module.exports.createErrorEmbed = createErrorEmbed
 module.exports.createSongDetailsEmbed = createSongDetailsEmbed
 module.exports.createRecordingFileEmbed = createRecordingFileEmbed
+module.exports.createCommandHelpEmbed = createCommandHelpEmbed
