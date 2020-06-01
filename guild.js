@@ -103,7 +103,7 @@ class GuildHandler {
                 return
             }
             this.joinVoiceChannel(voiceChannel, msg.channel, callback,
-                new ctx.MessageContext(msg.member.user, msg.content.replace(prefix, ''), msg.channel))
+                new ctx.MessageContext(msg.member.user, msg.content.replace(prefix, ''), msg.channel, msg))
         });
     }
 

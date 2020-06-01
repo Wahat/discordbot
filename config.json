@@ -1,6 +1,5 @@
 {
   "prefix": "?",
-  "keyword": "",
   "commands": {
     "play": {
       "description": "Play a song (currently supports Youtube search/url).",

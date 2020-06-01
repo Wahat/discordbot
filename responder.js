@@ -52,6 +52,23 @@ class TextResponder {
     /**
      *
      * @param {MessageContext} context
+     * @param {string | EmojiIdentifierResolvable} emoji
+     * @return boolean
+     */
+    react(context, emoji) {
+        if (!context.getDiscordMessage()) {
+            return false
+        }
+        // if (emoji.length !== 1) {
+        //     emoji = context.getDiscordMessage().guild.emojis.cache.get(emoji)
+        // }
+        context.getDiscordMessage().react(emoji)
+        return true
+    }
+
+    /**
+     *
+     * @param {MessageContext} context
      */
     startTyping(context) {
         const textChannel = context.getTextChannel()

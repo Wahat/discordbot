@@ -48,6 +48,7 @@ class DJ {
         const newVolume = volume / 100
         if (queue.connection.dispatcher) {
             queue.connection.dispatcher.setVolume(newVolume);
+            textResponder.react(context, '👌')
         }
         queue.volume = newVolume
     }
@@ -77,8 +78,8 @@ class DJ {
      */
     skip(context) {
         const queue = this.getGuildQueue(context)
-        //TODO show message
         this.playNext(context, queue)
+        textResponder.react(context, '👌')
     }
 
     /**
@@ -86,15 +87,11 @@ class DJ {
      * @param {VoiceConnectionMessageContext} context
      */
     stop(context) {
-        // if (!message.member.voice.channel)
-        //     return message.channel.send(
-        //         "You have to be in a voice channel to stop the music!"
-        //     );
         const queue = this.getGuildQueue(context)
         queue.songs = [];
 
-        //TODO: show message
         if (queue.connection.dispatcher) {
+            textResponder.react(context, '👌')
             queue.connection.dispatcher.end();
         }
     }
@@ -108,8 +105,10 @@ class DJ {
         if (queue.connection.dispatcher == null) {
             return
         }
-        // TODO: show message
-        queue.connection.dispatcher.pause()
+        if (queue.connection.dispatcher) {
+            textResponder.react(context, '👌')
+            queue.connection.dispatcher.pause()
+        }
     }
 
     /**
@@ -121,8 +120,10 @@ class DJ {
         if (queue.connection.dispatcher == null) {
             return
         }
-        // TODO: show message
-        queue.connection.dispatcher.resume()
+        if (queue.connection.dispatcher) {
+            textResponder.react(context, '👌')
+            queue.connection.dispatcher.resume()
+        }
     }
 
     say(context, message, voice) {

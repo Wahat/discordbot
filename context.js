@@ -51,13 +51,15 @@ class GuildContext {
 }
 
 class MessageContext {
-    constructor(user, message, textChannel) {
+    constructor(user, message, textChannel, discordMessage=null) {
         /** @member {User} **/
         this.user = user
         /** @member {string} **/
         this.message = message
         /** @member {TextChannel} **/
         this.textChannel = textChannel
+        /** @member {Message | null} **/
+        this.discordMessage = discordMessage
     }
 
     /**
@@ -78,10 +80,10 @@ class MessageContext {
 
     /**
      *
-     * @param {TextChannel} textChannel
+     * @returns {Message}
      */
-    setTextChannel(textChannel) {
-        this.textChannel = textChannel
+    getDiscordMessage() {
+        return this.discordMessage
     }
 
     /**
@@ -95,7 +97,7 @@ class MessageContext {
 
 class VoiceConnectionMessageContext extends MessageContext {
     constructor(messageContext, voiceConnection) {
-        super(messageContext.user, messageContext.message, messageContext.textChannel);
+        super(messageContext.user, messageContext.message, messageContext.textChannel, messageContext.discordMessage);
         this.voiceConnection = voiceConnection
     }
 
