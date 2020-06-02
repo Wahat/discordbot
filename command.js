@@ -49,17 +49,18 @@ class CommandHandler {
             const commandArgs = commandConfig["commands"][commandType]["args"]
             const parsedArgs = {}
             if (yargs['h']) {
-                textResponder.showCommandHelp(msgContext, commandConfig, commandType)
+                this.textResponder.showCommandHelp(msgContext, commandConfig, commandType)
                 return
             }
             commandArgs.forEach(commandArg => {
                 parsedArgs[commandArg["name"]] = commandArg["flag"] === "_" && yargs[commandArg["flag"]]
                     ? yargs[commandArg["flag"]].join(' ') : yargs[commandArg["flag"]]
                 if (commandArg["required"] && !parsedArgs[commandArg["name"]]) {
-                    textResponder.respond(msgContext,
+                    this.textResponder.respond(msgContext,
                         embedder.createErrorEmbed(
                             `${commandType} requires ${commandArg["name"]} parameter (${commandArg["flag"]})`)
                         , "error")
+                    return
                 }
                 if (commandArg["integer"] && !isNumeric(parsedArgs[commandArg["name"]])) {
                     embedder.createErrorEmbed(

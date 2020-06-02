@@ -1,4 +1,4 @@
-const speechEngine = require('./SpeechRecognition/python.js')
+const speechEngine = require('./SpeechRecognition/google.js')
 const snowboy = require('./snowboy.js').Snowboy
 const stream = require('stream')
 const audioUtils = require('./audio_utils.js')
@@ -69,15 +69,6 @@ class AudioHandler {
             audioContext.removeAudioStream(userId)
             snowboy.remove(guildId, userId)
         })
-        //
-        // this.guildsEventReceiver.on('userJoinedChannel', voiceState => {
-        //     const context = Guild.getGuildContextFromId(voiceState.guild.id)
-        //     if (!context || !context.getVoiceConnection()
-        //         || context.getVoiceConnection().channel.id !== voiceState.channelID) {
-        //         return
-        //     }
-        //     this.startListeningToUser(context, voiceState.member.user)
-        // })
 
         this.guildsEventReceiver.on('userChangedChannel', voiceState => {
 
@@ -93,8 +84,7 @@ class AudioHandler {
         if (this.guilds.has(context.getGuildId()) || !connection) {
             return
         }
-        connection.play(audioUtils.createSilenceStream(), { type: "opus" }); // This is required for the bot to be able to listen
-        connection.dispatcher.destroy()
+        audioUtils.playSilentAudioStream(connection)
         this.getGuildAudioContext(context)
         connection.on('speaking', (user, speaking) => {
             if (user === undefined) {
@@ -106,11 +96,6 @@ class AudioHandler {
             }
             this.startListeningToUser(context, user)
         })
-
-        //
-        // connection.channel.members.forEach(member => {
-        //     this.startListeningToUser(context, member.user)
-        // })
 
         connection.on('ready', () => {
             console.log('Connection ready')

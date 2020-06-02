@@ -4,6 +4,20 @@ const prism = require('prism-media')
 const fs = require('fs')
 const wav = require('wav')
 
+
+/**
+ *
+ * @param {VoiceConnection} connection
+ */
+function playSilentAudioStream(connection) {
+    connection.play(audioUtils.playSilentAudioStream(), { type: "opus" }); // This is required for the bot to be able to listen
+    setTimeout(() => {
+        if (connection.dispatcher) {
+            connection.dispatcher.destroy()
+        }
+    }, 250)
+}
+
 /**
  *
  * @returns {Readable | module:stream.internal.Readable}
@@ -128,7 +142,7 @@ function convertWavFileToMp3File(inputPath, outputPath, callback) {
     spawn.execSync(`ffmpeg -i ${inputPath} -ac 2 -ar 48000 -vn -b:a 192k ${outputPath}`)
 }
 
-module.exports.createSilenceStream = createSilenceStream
+module.exports.playSilentAudioStream = playSilentAudioStream
 module.exports.createStereoToMonoTransformStream = createStereoToMonoTransformStream
 module.exports.writeStreamToMp3File = writeStreamToMp3File
 module.exports.convertMp3FileToOpusStream = convertMp3FileToOpusStream

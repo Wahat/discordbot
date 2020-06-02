@@ -12,6 +12,16 @@
         "args": []
       }
     },
+    "join": {
+      "description": "Join sender's current voice channel",
+      "type": "voice",
+      "args": [],
+      "command": {
+        "handler": "textResponder",
+        "name": "react",
+        "args": ["\uD83D\uDC4C"]
+      }
+    },
     "play": {
       "description": "Play a song (currently supports Youtube search/url).",
       "type": "voice",
