@@ -14,8 +14,7 @@ class ConfigHandler {
     }
 
     loadConfig(guildId) {
-        //const path = `./configs/config_${guildId}.json`
-        const path = `./config.json`
+        const path = `./configs/config_${guildId}.json`
         if (!fs.existsSync(path)) {
             fs.writeFileSync(path, '{}');
         }

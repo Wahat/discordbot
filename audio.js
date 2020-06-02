@@ -90,7 +90,7 @@ class AudioHandler {
      */
     registerConnection(context) {
         const connection = context.getVoiceConnection()
-        if (this.guilds.has(context.getGuildId())) {
+        if (this.guilds.has(context.getGuildId()) || !connection) {
             return
         }
         connection.play(audioUtils.createSilenceStream(), { type: "opus" }); // This is required for the bot to be able to listen

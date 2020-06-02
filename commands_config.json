@@ -1,6 +1,17 @@
 {
-  "prefix": "?",
   "commands": {
+    "help": {
+      "description": "Help command",
+      "type": "admin",
+      "args": [
+
+      ],
+      "command": {
+        "handler": "textResponder",
+        "name": "showBasicHelp",
+        "args": []
+      }
+    },
     "play": {
       "description": "Play a song (currently supports Youtube search/url).",
       "type": "voice",
@@ -62,7 +73,7 @@
     },
     "volume": {
       "description": "Set the bot output volume (0 - 100).  Lower and Higher options also exist.",
-      "type": "volume",
+      "type": "voice",
       "args": [
         {
           "name": "volume",

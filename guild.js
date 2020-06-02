@@ -1,5 +1,7 @@
 const ctx = require('./context.js')
 const events = require('events')
+const configHandler = require('./config.js').ConfigHandler
+const commandConfig = require('./commands_config.json')
 
 class GuildHandler {
     constructor() {
@@ -29,6 +31,12 @@ class GuildHandler {
         if (!this.guildContexts.has(guild.id)) {
             this.guildContexts.set(guild.id,
                 new ctx.GuildContext(connection, textChannel))
+        }
+        // Update guild context if different channel / new voice connection
+        const guildContext = this.guildContexts.get(guild.id)
+        if (guildContext.getTextChannel() !== textChannel ||
+            connection && guildContext.getVoiceConnection() !== connection) {
+            this.guildContexts.set(guild.id, new ctx.GuildContext(connection, textChannel))
         }
         return this.guildContexts.get(guild.id)
     }
@@ -98,12 +106,23 @@ class GuildHandler {
                 return
             }
             const voiceChannel = msg.member.voice.channel;
-            if (!voiceChannel) {
-                msg.channel.send("You need to be in a voice channel to play music!");
+            const aliasedCommand = msg.content.replace(prefix, '').split(' ')[0]
+            const guildConfig = configHandler.retrieveConfig(voiceChannel.guild.id)
+            const actualCommand = guildConfig["aliases"][aliasedCommand] ? guildConfig["aliases"][aliasedCommand] : aliasedCommand
+            if (!commandConfig["commands"][actualCommand]) {
+                msg.channel.send('Not a valid command')
                 return
             }
-            this.joinVoiceChannel(voiceChannel, msg.channel, callback,
-                new ctx.MessageContext(msg.member.user, msg.content.replace(prefix, ''), msg.channel, msg))
+            if (!voiceChannel && commandConfig["commands"][actualCommand]["type"] === 'voice') {
+                msg.channel.send('You need to be in a voice channel to play music!')
+                return
+            }
+            const msgContext = new ctx.MessageContext(msg.member.user, msg.content.replace(prefix, '').replace(aliasedCommand, actualCommand), msg.channel, msg)
+            if (commandConfig["commands"][actualCommand]["type"] !== 'voice') {
+                callback(this.getGuildContext(null, msg.channel), msgContext)
+                return
+            }
+            this.joinVoiceChannel(voiceChannel, msg.channel, callback, msgContext)
         });
     }
 
@@ -112,12 +131,12 @@ class GuildHandler {
      * @param {VoiceChannel} voiceChannel
      * @param {TextChannel} textChannel
      * @param callback
-     * @param {MessageContext} msg
+     * @param {MessageContext} msgContext
      */
-    joinVoiceChannel(voiceChannel, textChannel, callback, msg = null) {
+    joinVoiceChannel(voiceChannel, textChannel, callback, msgContext = null) {
         voiceChannel.join().then(connection => {
             console.log(`Joining channel ${voiceChannel.name}`)
-            callback(this.getGuildContext(connection, textChannel), msg)
+            callback(this.getGuildContext(connection, textChannel), msgContext)
         })
     }
 

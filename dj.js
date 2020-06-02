@@ -30,6 +30,10 @@ class DJ {
             };
             this.guildQueues.set(guildId, queueObject)
         }
+        if (context.getVoiceConnection() &&
+            context.getVoiceConnection() !== this.guildQueues.get(guildId).connection) {
+            this.guildQueues.get(guildId).connection = context.getVoiceConnection()
+        }
         return this.guildQueues.get(guildId)
     }
 

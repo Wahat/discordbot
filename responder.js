@@ -1,3 +1,5 @@
+const embedder = require('./embedder.js').Embedder
+
 class TextResponder {
     constructor() {
         /** @member {Map<string><Map<string><Message>>} **/
@@ -15,6 +17,30 @@ class TextResponder {
             this.guildMessagesMap.set(guildId, new Map())
         }
         return this.guildMessagesMap.get(guildId)
+    }
+
+    /**
+     *
+     * @param {MessageContext} context
+     */
+    showBasicHelp(context) {
+        this.respond(context, embedder.getBaseEmbed().setDescription('help'), 'help')
+    }
+
+    /**
+     *
+     * @param {MessageContext} context
+     * @param {Object} commandConfig
+     * @param {string} commandType
+     */
+    showCommandHelp(context, commandConfig, commandType)  {
+        this.respond(context,
+            embedder.createCommandHelpEmbed(commandConfig["commands"][commandType]),
+            `${commandType}_help`, () => {
+                setTimeout(() => {
+                    this.remove(context, `${commandType}_help`)
+                }, 10000)
+            })
     }
 
     /**

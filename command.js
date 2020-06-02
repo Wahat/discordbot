@@ -1,7 +1,8 @@
 const events = require('events')
 const ctx = require('./context.js')
-const textResponder = require('./responder.js').TextResponder
 const embedder = require('./embedder').Embedder
+
+const commandConfig = require(`./commands_config.json`)
 
 class CommandHandler {
     /**
@@ -14,6 +15,8 @@ class CommandHandler {
         this.dj = dj
         /** @member {AudioHandler} **/
         this.audioHandler = audioHandler
+        /** @member {TextResponder} **/
+        this.textResponder = require('./responder.js').TextResponder
         /** @member {EventEmitter | module:events.EventEmitter.EventEmitter} **/
         this.eventReceiver = new events.EventEmitter()
 
@@ -41,18 +44,12 @@ class CommandHandler {
      */
     onCommandReceived(context, msgContext) {
         const yargs = require('yargs-parser')(msgContext.getMessage())
-        const commandType = parseCommand(yargs['_'].shift())
-        if (context.getConfig().commands[commandType]) {
-            const commandArgs = context.getConfig()["commands"][commandType]["args"]
+        let commandType = parseCommand(yargs['_'].shift())
+        if (commandConfig["commands"][commandType]) {
+            const commandArgs = commandConfig["commands"][commandType]["args"]
             const parsedArgs = {}
             if (yargs['h']) {
-                textResponder.respond(msgContext,
-                    embedder.createCommandHelpEmbed(context.getConfig()["commands"][commandType]),
-                    `${commandType}_help`, () => {
-                        setTimeout(() => {
-                            textResponder.remove(msgContext, `${commandType}_help`)
-                        }, 10000)
-                    })
+                textResponder.showCommandHelp(msgContext, commandConfig, commandType)
                 return
             }
             commandArgs.forEach(commandArg => {
@@ -71,9 +68,9 @@ class CommandHandler {
                     parsedArgs[commandArg["name"]] = parseInt(parsedArgs[commandArg["name"]])
                 }
             })
-            const commandExec = context.getConfig()["commands"][commandType]["command"]
+            const commandExec = commandConfig["commands"][commandType]["command"]
             const execArgs = []
-            commandExec['args'].forEach(arg => {
+            commandExec["args"].forEach(arg => {
                 let parsedArg = parsedArgs[arg]
                 if (parsedArg == null && !commandArgs.find(commandArg => commandArg["name"] === arg)) {
                     parsedArg = arg
@@ -81,7 +78,7 @@ class CommandHandler {
                 execArgs.push(parsedArg)
             })
             let commandContext = new ctx.VoiceConnectionMessageContext(msgContext, context.getVoiceConnection())
-            this[commandExec['handler']][commandExec['name']](commandContext, ...execArgs)
+            this[commandExec["handler"]][commandExec["name"]](commandContext, ...execArgs)
         }
     }
 }
