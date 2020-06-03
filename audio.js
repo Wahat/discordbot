@@ -1,4 +1,4 @@
-const speechEngine = require('./SpeechRecognition/google.js')
+const speechEngine = require('./SpeechRecognition/python.js')
 const snowboy = require('./snowboy.js').Snowboy
 const stream = require('stream')
 const audioUtils = require('./audio_utils.js')
@@ -162,8 +162,9 @@ class AudioHandler {
      * @param {User} user
      * @param {string} caption
      * @param length
+     * @param {boolean} transcribe
      */
-    recordUserToFile(context, user, caption="Clip", length) {
+    recordUserToFile(context, user, caption = "Clip", length = 0, transcribe = false) {
         const audioStream = this.getGuildAudioContext(context).getAudioStream(user.id)
         if (audioStream == null) {
             console.log(`No audioStream for ${user.tag}`)
@@ -174,16 +175,14 @@ class AudioHandler {
             if (err) {
                 console.err(`There was an error writing ${outputFile} to mp3: ${err.toString()}`)
                 return
-            }
-            //TODO call responder singleton instead of context.getTextChannel()
-            textResponder.respond(context, embedder.createRecordingFileEmbed(outputFile, caption, user.id), '',
-                msg => {
-                    fs.unlink(outputFile, error => {
-                        if (error) {
-                            console.log(`There was an error deleting ${outputFile}`)
-                        }
-                    })
+            }gz
+            textResponder.respond(context, embedder.createRecordingFileEmbed(outputFile, caption, user.id), '', msg => {
+                fs.unlink(outputFile, error => {
+                    if (error) {
+                        console.log(`There was an error deleting ${outputFile}`)
+                    }
                 })
+            })
         })
     }
 

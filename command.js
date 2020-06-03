@@ -47,7 +47,6 @@ class CommandHandler {
         const yargs = require('yargs-parser')(msgContext.getMessage())
         let commandType = parseCommand(yargs['_'].shift())
         if (commandConfig["commands"][commandType]) {
-            console.log(yargs)
             /** @type {Collection} **/
             const commandArgs = commandConfig["commands"][commandType]["args"]
             const parsedArgs = {}
@@ -80,16 +79,10 @@ class CommandHandler {
                 if (parsedArg == null && !commandArgs.find(commandArg => commandArg["name"] === arg)) {
                     parsedArg = arg
                 }
-                if (arg === "user") {
-                    parsedArg = parseUser(msgContext, parsedArg)
-                    if (!parsedArg) {
-                        this.textResponder.respond(msgContext,
-                            embedder.createErrorEmbed(
-                                `Invalid user provided (DisplayName / NickName / Mention)`)
-                            , "error")
-                        invalidArg = true
-                        return
-                    }
+                try {
+                    parsedArg = preParseSpecificArgumentsIfNeeded(this.textResponder, msgContext, arg, parsedArg)
+                } catch {
+                    invalidArg = true
                 }
                 execArgs.push(parsedArg)
             })
@@ -104,6 +97,28 @@ class CommandHandler {
 
 /**
  *
+ * @param {TextResponder} textResponder
+ * @param {MessageContext} msgContext
+ * @param {string} arg
+ * @param {string | GuildMember} parsedArg
+ * @returns {GuildMember | int}
+ */
+function preParseSpecificArgumentsIfNeeded(textResponder, msgContext, arg, parsedArg) {
+    switch (arg) {
+        case "user" :
+            parsedArg = parseUser(msgContext, parsedArg)
+            if (!parsedArg) {
+                textResponder.respond(msgContext,
+                    embedder.createErrorEmbed(`Invalid user provided (DisplayName / NickName / Mention)`),
+                    "error")
+                throw('Invalid user provided')
+            }
+    }
+    return parsedArg
+}
+
+/**
+ * If command argument is labelled "user", this command is called by default
  * @param {MessageContext} context
  * @param {string} input
  */
@@ -123,10 +138,14 @@ function parseUser(context, input) {
 /**
  * Mentions are passed as <@!1111111111111>
  * @param {string} input
- * @return {string}
+ * @return {string | null}
  */
 function parseMention(input) {
-    return input.match(/^<@!?(\d+)>$/)[1];
+    const parsedId = input.match(/^<@!?(\d+)>$/)
+    if (parsedId != null) {
+        return parsedId[1]
+    }
+    return null
 }
 
 /**

@@ -170,6 +170,12 @@
           "description": "Length of the clip (max 20 seconds).",
           "flag": "l",
           "required": false
+        },
+        {
+          "name": "transcribe",
+          "description": "Transcribe clip",
+          "flag": "-t",
+          "required": false
         }
       ],
       "command": {
@@ -178,7 +184,8 @@
         "args": [
           "user",
           "caption",
-          "length"
+          "length",
+          "transcribe"
         ]
       }
     },

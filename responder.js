@@ -52,12 +52,12 @@ class TextResponder {
      */
     respond(context, embed, type, callback=()=>{}) {
         const textChannel = context.getTextChannel()
-        if (textChannel === undefined) {
+        if (!textChannel) {
             return
         }
         textChannel.send(embed).then(msg => {
             this.getGuildMessages(context).set(type, msg)
-            callback()
+            callback(msg)
         })
     }
 
