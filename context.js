@@ -64,6 +64,14 @@ class MessageContext {
 
     /**
      *
+     * @returns {Guild}
+     */
+    getGuild() {
+        return this.textChannel.guild
+    }
+
+    /**
+     *
      * @returns {User}
      */
     getUser() {
@@ -93,6 +101,32 @@ class MessageContext {
     getTextChannel() {
         return this.textChannel
     }
+
+    /**
+     *
+     * @param {string} name
+     * @returns {GuildMember}
+     */
+    getUserFromName(name) {
+        const user = this.getGuild().members.cache.find(user => user.displayName === name)
+        if (user) {
+            console.log(`Found user ${user.displayName}`)
+        }
+        return user
+    }
+
+    /**
+     *
+     * @param {string} id
+     * @returns {GuildMember}
+     */
+    getUserFromId(id) {
+        const user = this.getGuild().members.cache.find(user => user.id === id)
+        if (user) {
+            console.log(`Found user ${user.displayName} (${user.id})`)
+        }
+        return user
+    }
 }
 
 class VoiceConnectionMessageContext extends MessageContext {
@@ -107,19 +141,6 @@ class VoiceConnectionMessageContext extends MessageContext {
      */
     getVoiceConnection() {
         return this.voiceConnection
-    }
-
-    /**
-     *
-     * @param {string} name
-     * @returns {GuildMember}
-     */
-    getUserFromName(name) {
-        const user = this.voiceConnection.channel.members.find(user => user.displayName === name)
-        if (user) {
-            console.log(`Found user ${user.displayName}`)
-        }
-        return user
     }
 }
 

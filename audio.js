@@ -159,15 +159,11 @@ class AudioHandler {
     /**
      *
      * @param {VoiceConnectionMessageContext} context
-     * @param {string} userName
+     * @param {User} user
      * @param {string} caption
      * @param length
      */
-    recordUserToFile(context, userName, caption="Clip", length) {
-        const user = context.getUserFromName(userName)
-        if (!user) {
-            return
-        }
+    recordUserToFile(context, user, caption="Clip", length) {
         const audioStream = this.getGuildAudioContext(context).getAudioStream(user.id)
         if (audioStream == null) {
             console.log(`No audioStream for ${user.tag}`)
@@ -194,14 +190,10 @@ class AudioHandler {
     /**
      *
      * @param {VoiceConnectionMessageContext} context
-     * @param {string} userName
+     * @param {User} user
      * @param length
      */
-    replayUser(context, userName, length) {
-        const user = context.getUserFromName(userName)
-        if (!user) {
-            return
-        }
+    replayUser(context, user, length) {
         const audioStream = this.getGuildAudioContext(context).getAudioStream(user.id)
         if (audioStream == null) {
             console.log(`No audioStream for ${user.tag}`)

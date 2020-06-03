@@ -16,7 +16,7 @@ class ConfigHandler {
     loadConfig(guildId) {
         const path = `./configs/config_${guildId}.json`
         if (!fs.existsSync(path)) {
-            fs.writeFileSync(path, '{}');
+            fs.writeFileSync(path, this.buildDefaultConfig());
         }
         let rawdata = fs.readFileSync(path);
         return JSON.parse(rawdata)
@@ -26,6 +26,14 @@ class ConfigHandler {
         const path = `./configs/config_${guildId}.json`
         fs.writeFile(path, guildConfig, err => {
             console.log(`An error occured when saving guild ${guildId} config: ${error}`)
+        })
+    }
+
+    buildDefaultConfig() {
+        return JSON.stringify({
+            "aliases": {},
+            "nicknames": {},
+            "prefix": "?",
         })
     }
 }

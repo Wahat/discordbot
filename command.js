@@ -1,6 +1,7 @@
 const events = require('events')
 const ctx = require('./context.js')
 const embedder = require('./embedder').Embedder
+const guildHandler = require('./guild.js').GuildHandler
 
 const commandConfig = require(`./commands_config.json`)
 
@@ -46,6 +47,8 @@ class CommandHandler {
         const yargs = require('yargs-parser')(msgContext.getMessage())
         let commandType = parseCommand(yargs['_'].shift())
         if (commandConfig["commands"][commandType]) {
+            console.log(yargs)
+            /** @type {Collection} **/
             const commandArgs = commandConfig["commands"][commandType]["args"]
             const parsedArgs = {}
             if (yargs['h']) {
@@ -57,31 +60,73 @@ class CommandHandler {
                     ? yargs[commandArg["flag"]].join(' ') : yargs[commandArg["flag"]]
                 if (commandArg["required"] && !parsedArgs[commandArg["name"]]) {
                     this.textResponder.respond(msgContext,
-                        embedder.createErrorEmbed(
-                            `${commandType} requires ${commandArg["name"]} parameter (${commandArg["flag"]})`)
-                        , "error")
+                        embedder.createErrorEmbed(`${commandType} requires ${commandArg["name"]} parameter (${commandArg["flag"]})`),
+                        "error")
                     return
                 }
                 if (commandArg["integer"] && !isNumeric(parsedArgs[commandArg["name"]])) {
-                    embedder.createErrorEmbed(
-                        `${commandArg["name"]} parameter must be integer`, "error")
+                    this.textResponder.respond(msgContext,
+                        embedder.createErrorEmbed(`${commandArg["name"]} parameter must be integer`),
+                        "error")
                 } else if (commandArg["integer"]) {
                     parsedArgs[commandArg["name"]] = parseInt(parsedArgs[commandArg["name"]])
                 }
             })
             const commandExec = commandConfig["commands"][commandType]["command"]
             const execArgs = []
+            let invalidArg = false
             commandExec["args"].forEach(arg => {
                 let parsedArg = parsedArgs[arg]
                 if (parsedArg == null && !commandArgs.find(commandArg => commandArg["name"] === arg)) {
                     parsedArg = arg
                 }
+                if (arg === "user") {
+                    parsedArg = parseUser(msgContext, parsedArg)
+                    if (!parsedArg) {
+                        this.textResponder.respond(msgContext,
+                            embedder.createErrorEmbed(
+                                `Invalid user provided (DisplayName / NickName / Mention)`)
+                            , "error")
+                        invalidArg = true
+                        return
+                    }
+                }
                 execArgs.push(parsedArg)
             })
+            if (invalidArg) {
+                return
+            }
             let commandContext = new ctx.VoiceConnectionMessageContext(msgContext, context.getVoiceConnection())
             this[commandExec["handler"]][commandExec["name"]](commandContext, ...execArgs)
         }
     }
+}
+
+/**
+ *
+ * @param {MessageContext} context
+ * @param {string} input
+ */
+function parseUser(context, input) {
+    const guildConfig = guildHandler.getGuildContextFromId(context.getGuild().id)
+    let user = context.getUserFromName(input)
+    if (!user) {
+        user = context.getUserFromId(parseMention(input))
+        if (!user) {
+            input = guildConfig.getConfig()["nicknames"][input]
+            user = context.getUserFromId(input)
+        }
+    }
+    return user
+}
+
+/**
+ * Mentions are passed as <@!1111111111111>
+ * @param {string} input
+ * @return {string}
+ */
+function parseMention(input) {
+    return input.match(/^<@!?(\d+)>$/)[1];
 }
 
 /**

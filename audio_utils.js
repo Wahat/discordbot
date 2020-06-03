@@ -10,7 +10,7 @@ const wav = require('wav')
  * @param {VoiceConnection} connection
  */
 function playSilentAudioStream(connection) {
-    connection.play(audioUtils.playSilentAudioStream(), { type: "opus" }); // This is required for the bot to be able to listen
+    connection.play(createSilenceStream(), { type: "opus" }); // This is required for the bot to be able to listen
     setTimeout(() => {
         if (connection.dispatcher) {
             connection.dispatcher.destroy()
