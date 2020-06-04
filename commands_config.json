@@ -19,7 +19,9 @@
       "command": {
         "handler": "textResponder",
         "name": "react",
-        "args": ["\uD83D\uDC4C"]
+        "args": [
+          "\uD83D\uDC4C"
+        ]
       }
     },
     "play": {

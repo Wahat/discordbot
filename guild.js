@@ -1,6 +1,7 @@
 const ctx = require('./context.js')
 const events = require('events')
 const configHandler = require('./config.js').ConfigHandler
+const dmHandler = require('./dm.js').DMHandler
 const commandConfig = require('./commands_config.json')
 
 class GuildHandler {
@@ -50,7 +51,7 @@ class GuildHandler {
 
     /**
      *
-     * @param {Client} client
+     * @param {module:"discord.js".Client} client
      * @param {onJoinedCallback} callback
      */
     registerWhenToJoinListener(client, callback) {
@@ -60,8 +61,8 @@ class GuildHandler {
 
     /**
      *
-     * @param {Client} client
-     * @param callback
+     * @param {module:"discord.js".Client} client
+     * @param {onJoinedCallback} callback
      */
     registerJoinOnJoin(client, callback) {
         client.on('voiceStateUpdate', (oldState, newState) => {
@@ -96,18 +97,24 @@ class GuildHandler {
 
     /**
      *
-     * @param client
-     * @param callback
+     * @param {module:"discord.js".Client} client
+     * @param {onJoinedCallback} callback
      */
     registerJoinOnMessage(client, callback) {
         client.on('message', msg => {
+            if (msg.channel.type !== "text") {
+                if (msg.channel.type === "dm") {
+                    dmHandler.onMessageReceived(client, msg)
+                }
+                return
+            }
             const prefix = this.findPrefix(msg.channel.guild)
             if (msg.author.bot || !msg.content.startsWith(prefix)) {
                 return
             }
             const voiceChannel = msg.member.voice.channel;
             const aliasedCommand = msg.content.replace(prefix, '').split(' ')[0]
-            const guildConfig = configHandler.retrieveConfig(voiceChannel.guild.id)
+            const guildConfig = configHandler.retrieveConfig(msg.channel.guild.id)
             const actualCommand = guildConfig["aliases"][aliasedCommand] ? guildConfig["aliases"][aliasedCommand] : aliasedCommand
             if (!commandConfig["commands"][actualCommand]) {
                 msg.channel.send('Not a valid command')
@@ -160,10 +167,10 @@ class GuildHandler {
 
     /**
      *
-     * @param {string} guildId
+     * @param {Guild} guild
      * @returns {string}
      */
-    findPrefix(guildId) {
+    findPrefix(guild) {
         return '?'
     }
 }

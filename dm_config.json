@@ -1,0 +1,61 @@
+{
+  "commands": {
+    "register": {
+      "args": [],
+      "stack": [
+        "_select_guild", "_select_type", "_set_new_key_value_pair", "acknowledgement"
+      ]
+    },
+    "_select_guild_request": {
+      "type": "request",
+      "message": "Which guild are you configuring?",
+      "args": [
+        "guilds"
+      ]
+    },
+    "_select_guild_response": {
+      "type": "response",
+      "args": [
+        "guild"
+      ]
+    },
+    "_select_type_request": {
+      "type": "request",
+      "message": "Which type are you configuring?",
+      "args": [
+        "types"
+      ]
+    },
+    "_select_type_response": {
+      "type": "response",
+      "args": [
+        "type"
+      ]
+    },
+    "_set_new_key_value_pair": {
+      "response": "Enter a key value pair",
+      "args": [
+        "key",
+        "value"
+      ]
+    },
+    "acknowledgement": {
+      "response": "",
+      "args": [
+
+      ]
+    },
+    "guilds": {
+      "response": "Guilds that you are an administrator of: \n%s",
+      "response_args": [
+        "guilds"
+      ]
+    },
+    "members": {
+      "response": "Members that are in %s: \n%s",
+      "response_args": [
+        "users"
+      ]
+    }
+  }
+}

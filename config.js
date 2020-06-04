@@ -25,8 +25,14 @@ class ConfigHandler {
     saveConfig(guildId, guildConfig) {
         const path = `./configs/config_${guildId}.json`
         fs.writeFile(path, guildConfig, err => {
-            console.log(`An error occured when saving guild ${guildId} config: ${error}`)
+            console.log(`An error occured when saving guild ${guildId} config: ${err}`)
         })
+    }
+
+    updateConfig(guildId, guildConfig, category, key, value) {
+        guildConfig[category][key] = value
+        this.saveConfig(guildId, guildConfig)
+        return guildConfig
     }
 
     buildDefaultConfig() {

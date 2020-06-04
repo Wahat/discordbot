@@ -117,6 +117,7 @@ dist
 
 .DS_Store
 .idea/
+logs/
 clips/
 configs/
 

@@ -173,9 +173,9 @@ class AudioHandler {
         const outputFile = `./clips/${user.tag}_recorded.mp3`
         audioUtils.writeStreamToMp3File(audioStream.getBuffer(), outputFile, caption, user.tag, err => {
             if (err) {
-                console.err(`There was an error writing ${outputFile} to mp3: ${err.toString()}`)
+                console.log(`There was an error writing ${outputFile} to mp3: ${err.toString()}`)
                 return
-            }gz
+            }
             textResponder.respond(context, embedder.createRecordingFileEmbed(outputFile, caption, user.id), '', msg => {
                 fs.unlink(outputFile, error => {
                     if (error) {

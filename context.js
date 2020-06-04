@@ -123,7 +123,7 @@ class MessageContext {
     getUserFromId(id) {
         const user = this.getGuild().members.cache.find(user => user.id === id)
         if (user) {
-            console.log(`Found user ${user.displayName} (${user.id})`)
+            console.log(`Found user ${user.displayName} using (${user.id})`)
         }
         return user
     }

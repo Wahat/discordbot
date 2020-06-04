@@ -18,7 +18,7 @@ class CommandHandler {
         this.audioHandler = audioHandler
         /** @member {TextResponder} **/
         this.textResponder = require('./responder.js').TextResponder
-        /** @member {EventEmitter | module:events.EventEmitter.EventEmitter} **/
+        /** @member {EventEmitter | module:events.internal.EventEmitter} **/
         this.eventReceiver = new events.EventEmitter()
 
         this.eventReceiver.on('playAudioAck', (context, mode) => {
@@ -109,7 +109,7 @@ function preParseSpecificArgumentsIfNeeded(textResponder, msgContext, arg, parse
             parsedArg = parseUser(msgContext, parsedArg)
             if (!parsedArg) {
                 textResponder.respond(msgContext,
-                    embedder.createErrorEmbed(`Invalid user provided (DisplayName / NickName / Mention)`),
+                    embedder.createErrorEmbed(`Invalid user provided (Display name / Nickname / Mention)`),
                     "error")
                 throw('Invalid user provided')
             }
