@@ -22,6 +22,7 @@ class DJ {
     getGuildQueue(context) {
         const guildId = context.getVoiceConnection().channel.guild.id
         if (!this.guildQueues.has(guildId)) {
+            context.getVoiceConnection()
             const queueObject = {
                 connection: context.getVoiceConnection(),
                 songs: [],
@@ -138,11 +139,12 @@ class DJ {
      *
      * @param {VoiceConnectionMessageContext} context
      * @param {int} mode - 0 for start, 1 for end
+     * @param callback
      */
-    playAudioAck(context, mode) {
+    playAudioAck(context, mode, callback) {
         const file = mode === 0 ? this.siri_ack_start : this.siri_ack_finish
         const hotwordAckStream = audioUtils.convertMp3FileToOpusStream(file)
-        this.playAudioEvent(context, hotwordAckStream, 'opus')
+        this.playAudioEvent(context, hotwordAckStream, 'opus', callback)
     }
 
     /**
@@ -161,17 +163,15 @@ class DJ {
      * @param {string} type
      * @param callback
      */
-    playAudioEvent(context, audioStream, type, callback = () => {
-    }) {
+    playAudioEvent(context, audioStream, type, callback = () => {}) {
         const currentSong = this.getGuildQueue(context).songs[0]
         if (currentSong && currentSong.stream) {
             currentSong.stream.unpipe()
             currentSong.stream.pause()
         }
-        context.getVoiceConnection().play(audioStream, {
+        this.getGuildQueue(context).connection.play(audioStream, {
             type: type
         }).on('finish', () => {
-            context.getVoiceConnection().removeAllListeners('finish')
             this.playSong(context, currentSong, true)
             callback()
         })
@@ -232,6 +232,13 @@ class DJ {
         } else {
             song.stream.resume()
         }
+
+        if (queue.connection.dispatcher) { // Clear listeners
+            queue.connection.dispatcher.removeAllListeners('start')
+            queue.connection.dispatcher.removeAllListeners('error')
+            queue.connection.dispatcher.removeAllListeners('finish')
+            queue.connection.dispatcher.end()
+        }
         queue.connection
             .play(song.stream, {
                 type: 'opus',
@@ -250,8 +257,8 @@ class DJ {
                 this.playNext(context, queue)
             })
             .on('error', error => console.error(error))
-        if (song) {
-            console.log(`Start playing: **${song.title}**`);
+        if (song && !resume) {
+            console.log(`Start playing: **${song.title}**`)
         }
     }
 

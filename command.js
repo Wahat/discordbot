@@ -21,8 +21,8 @@ class CommandHandler {
         /** @member {EventEmitter | module:events.internal.EventEmitter} **/
         this.eventReceiver = new events.EventEmitter()
 
-        this.eventReceiver.on('playAudioAck', (context, mode) => {
-            this.dj.playAudioAck(context, mode)
+        this.eventReceiver.on('playAudioAck', (context, mode, callback) => {
+            this.dj.playAudioAck(context, mode, callback)
         })
 
         this.eventReceiver.on('command', (context, msgContext) => {
@@ -54,6 +54,7 @@ class CommandHandler {
                 this.textResponder.showCommandHelp(msgContext, commandConfig, commandType)
                 return
             }
+            let failedArg = false
             commandArgs.forEach(commandArg => {
                 parsedArgs[commandArg["name"]] = commandArg["flag"] === "_" && yargs[commandArg["flag"]]
                     ? yargs[commandArg["flag"]].join(' ') : yargs[commandArg["flag"]]
@@ -61,16 +62,21 @@ class CommandHandler {
                     this.textResponder.respond(msgContext,
                         embedder.createErrorEmbed(`${commandType} requires ${commandArg["name"]} parameter (${commandArg["flag"]})`),
                         "error")
+                    failedArg = true
                     return
                 }
                 if (commandArg["integer"] && !isNumeric(parsedArgs[commandArg["name"]])) {
                     this.textResponder.respond(msgContext,
                         embedder.createErrorEmbed(`${commandArg["name"]} parameter must be integer`),
                         "error")
+                    failedArg = true
                 } else if (commandArg["integer"]) {
                     parsedArgs[commandArg["name"]] = parseInt(parsedArgs[commandArg["name"]])
                 }
             })
+            if (failedArg) {
+                return
+            }
             const commandExec = commandConfig["commands"][commandType]["command"]
             const execArgs = []
             let invalidArg = false

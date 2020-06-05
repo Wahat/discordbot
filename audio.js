@@ -1,4 +1,4 @@
-const speechEngine = require('./SpeechRecognition/python.js')
+const speechEngine = require('./SpeechRecognition/microsoft.js')
 const snowboy = require('./snowboy.js').Snowboy
 const stream = require('stream')
 const audioUtils = require('./audio_utils.js')
@@ -149,8 +149,9 @@ class AudioHandler {
                     context.getTextChannel()))
             })
             setTimeout(() => {
-                recognitionStream.end()
-                this.commandsEventEmitter.emit('playAudioAck', context, 1)
+                this.commandsEventEmitter.emit('playAudioAck', context, 1, () => {
+                    recognitionStream.end()
+                })
                 this.isListeningToCommand = false
             }, 3000)
         })
