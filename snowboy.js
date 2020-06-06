@@ -1,5 +1,5 @@
-const Detector = require('snowboy').Detector;
-const Models = require('snowboy').Models;
+const Detector = require('./snowboy/').Detector;
+const Models = require('./snowboy/').Models;
 const SampleRate = require('node-libsamplerate');
 const audioUtils = require('./audio_utils.js')
 
