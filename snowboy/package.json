@@ -28,9 +28,7 @@
   "gypfile": true,
   "license": "Apache-2.0",
   "dependencies": {
-    "node-pre-gyp": "^0.6.30",
-    "node-record-lpcm16": "^1.0.1",
-    "wav": "^1.0.2"
+    "node-pre-gyp": "^0.6.30"
   },
   "devDependencies": {
     "@types/node": "^6.0.38",
