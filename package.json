@@ -26,6 +26,7 @@
     "prism-media": "^1.2.2",
     "queue": "^6.0.1",
     "say": "^0.16.0",
+    "snowboy": "^1.3.1",
     "wav": "^1.0.2",
     "yargs-parser": "^18.1.3",
     "youtube-search": "^1.1.4",
