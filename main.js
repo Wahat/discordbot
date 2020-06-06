@@ -21,6 +21,10 @@ client.login(keys.discord_token).then(result => {
     //console.log(result)
 });
 
+client.on('invalidated', () => {
+    console.log('Session invalidated')
+})
+
 const audioHandler = new Audio.AudioHandler()
 const commandHandler = new Command.CommandHandler(DJ, audioHandler)
 audioHandler.registerCommandsEventEmitter(commandHandler.eventReceiver)

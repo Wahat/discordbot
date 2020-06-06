@@ -13,6 +13,8 @@ class AudioHandler {
     constructor() {
         /** @member {Map<string><GuildAudioContext>} **/
         this.guilds = new Map()
+        /** @member {Map<string><number>} **/
+        this.recentlyRemoved = new Map()
         /** @member {boolean} **/
         this.isListeningToCommand = false
         /** @member {EventEmitter | module:events.internal.EventEmitter} **/
@@ -66,12 +68,9 @@ class AudioHandler {
             }
             const audioContext = this.getGuildAudioContext(context)
             console.log(`Removing ${userId}`)
+            this.recentlyRemoved.set(userId, Date.now())
             audioContext.removeAudioStream(userId)
             snowboy.remove(guildId, userId)
-        })
-
-        this.guildsEventReceiver.on('userChangedChannel', voiceState => {
-
         })
     }
 
@@ -94,6 +93,14 @@ class AudioHandler {
             if (this.getGuildAudioContext(context).hasAudioStream(user.id) || user.bot) {
                 return
             }
+            // Might not be needed
+            if (this.recentlyRemoved.has(user.id)) {
+                console.log(`time difference ${Date.now() - this.recentlyRemoved.get(user.id)}`)
+            }
+            if (this.recentlyRemoved.has(user.id) && (Date.now() - this.recentlyRemoved.get(user.id)) < 10) {
+                this.recentlyRemoved.delete(user.id)
+                return
+            }
             this.startListeningToUser(context, user)
         })
 
@@ -111,6 +118,10 @@ class AudioHandler {
 
         connection.on('error', err => {
             console.log(`Error: ${err.name}, ${err.message}`)
+        })
+
+        connection.on('reconnecting', () => {
+            console.log('Reconnecting')
         })
 
         connection.on('disconnect', () => {

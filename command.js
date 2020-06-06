@@ -45,7 +45,7 @@ class CommandHandler {
      */
     onCommandReceived(context, msgContext) {
         const yargs = require('yargs-parser')(msgContext.getMessage())
-        let commandType = parseCommand(yargs['_'].shift())
+        let commandType = parseCommand(yargs['_'].shift().toLowerCase())
         if (commandConfig["commands"][commandType]) {
             /** @type {Collection} **/
             const commandArgs = commandConfig["commands"][commandType]["args"]

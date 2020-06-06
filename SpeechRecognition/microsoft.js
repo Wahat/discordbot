@@ -15,7 +15,7 @@ function runSpeechRecognition(audioStream, userTag, callback) {
 
     let recognizer = new speechToText.SpeechRecognizer(speechConfig, audioConfig)
     recognizer.recognized = function (s, e) {
-        const result = e.result.reason === speechToText.ResultReason.NoMatch ? "Unknown Value" : e.result.text.replace('.', '').toLowerCase()
+        const result = e.result.reason === speechToText.ResultReason.NoMatch ? "Unknown Value" : e.result.text.replace('.', '')
         callback(result)
     };
 
