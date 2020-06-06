@@ -6,7 +6,7 @@ const DJ = require('./dj.js').DJ
 
 const client = new Discord.Client()
 
-const keys = require('./keys.json')
+const keys = require('./keys.js').Key
 
 client.on('ready', () => {
     console.log(`Logged in as ${client.user.tag}!`)
@@ -17,7 +17,7 @@ client.on('ready', () => {
     })
 });
 
-client.login(keys.discord_token).then(result => {
+client.login(keys.get("discord_token")).then(result => {
     //console.log(result)
 });
 

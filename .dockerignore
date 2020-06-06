@@ -1,5 +1,9 @@
 node_modules
 npm-debug.log
+
+snowboy/
+clips/
+
 Dockerfile
 .dockerignore
 
