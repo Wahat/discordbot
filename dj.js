@@ -252,8 +252,6 @@ class DJ {
                 }
             })
             .on('finish', () => {
-                textResponder.remove(context, 'play')
-                textResponder.remove(context, 'queue')
                 this.playNext(context, queue)
             })
             .on('error', error => console.error(error))
@@ -268,6 +266,8 @@ class DJ {
      * @param {Object} queue
      */
     playNext(context, queue) {
+        textResponder.remove(context, 'play')
+        textResponder.remove(context, 'queue')
         queue.songs.shift();
         this.playSong(context, queue.songs[0]);
     }
