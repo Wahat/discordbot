@@ -10,8 +10,10 @@ RUN apt-get update && apt-get install -y \
   lame \
   libasound-dev \
   espeak \
+  ffmpeg \
   libmagic-dev \
-  libatlas-base-dev
+  libatlas-base-dev \
+  python-pip
 
 WORKDIR /home/node/discordbot
 run npm install
