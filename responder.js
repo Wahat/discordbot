@@ -1,5 +1,5 @@
 const embedder = require('./embedder.js').Embedder
-const speechGenerator = require('./SpeechGeneration/say.js')
+const speechGenerator = require('./SpeechGeneration/microsoft.js')
 
 class TextResponder {
     constructor() {
@@ -131,7 +131,7 @@ class VoiceResponder {
      * @param voice
      * @param callback
      */
-    respond(dj, context, message, voice='Samantha', callback=()=>{}) {
+    respond(dj, context, message, voice, callback=()=>{}) {
         speechGenerator.generateSpeechFromText(message, voice, stream => {
             dj.playAudioEvent(context, stream, 'opus', ()=>{
                 callback()

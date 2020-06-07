@@ -10,7 +10,7 @@ const spawn = require('child_process')
  * @param {string} voice
  * @param callback
  */
-function generateSpeechFromText(message, voice, callback) {
+function generateSpeechFromText(message, voice='Samantha', callback) {
     const outputPath = './clips/speechToText.wav'
     const mp3Path = './clips/speechToText.mp3'
     say.export(message, voice, 1, outputPath, err => {

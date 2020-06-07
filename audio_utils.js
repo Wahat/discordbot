@@ -102,6 +102,16 @@ function writeStreamToMp3File(audioBuffer, outputPath, title, author, callback) 
  * @returns {ReadableStream}
  */
 function convertMp3FileToOpusStream(inputPath) {
+    const mp3Stream = fs.createReadStream(inputPath);
+    return convertMp3StreamToOpusStream(mp3Stream)
+}
+
+/**
+ *
+ * @param {ReadableStream | ReadStream} inputStream
+ * @returns {ReadableStream}
+ */
+function convertMp3StreamToOpusStream(inputStream) {
     const opus = new prism.opus.Encoder({rate: 48000, channels: 2, frameSize: 960});
     const transcoder = new prism.FFmpeg({
         args: [
@@ -112,8 +122,7 @@ function convertMp3FileToOpusStream(inputPath) {
             '-ac', '2',
         ],
     });
-    const mp3Stream = fs.createReadStream(inputPath);
-    mp3Stream.pipe(transcoder).pipe(opus)
+    inputStream.pipe(transcoder).pipe(opus)
     return opus
 }
 
@@ -146,5 +155,6 @@ module.exports.playSilentAudioStream = playSilentAudioStream
 module.exports.createStereoToMonoTransformStream = createStereoToMonoTransformStream
 module.exports.writeStreamToMp3File = writeStreamToMp3File
 module.exports.convertMp3FileToOpusStream = convertMp3FileToOpusStream
+module.exports.convertMp3StreamToOpusStream = convertMp3StreamToOpusStream
 module.exports.writeStreamToWavFile = writeStreamToWavFile
 module.exports.convertWavFileToMp3File = convertWavFileToMp3File

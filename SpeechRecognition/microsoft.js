@@ -17,17 +17,17 @@ function runSpeechRecognition(audioStream, userTag, callback) {
     recognizer.recognized = function (s, e) {
         const result = e.result.reason === speechToText.ResultReason.NoMatch ? "Unknown Value" : e.result.text.replace('.', '')
         callback(result)
-    };
+    }
 
     recognizer.recognizeOnceAsync(
         function (result) {
-            recognizer.close();
+            recognizer.close()
             recognizer = undefined;
         },
         function (err) {
-            recognizer.close();
+            recognizer.close()
             recognizer = undefined;
-        });
+        })
 }
 
 module.exports.runSpeechRecognition = runSpeechRecognition
