@@ -1,5 +1,13 @@
 const fs = require('fs')
 
+
+function openJsonFile(filePath) {
+    if (!fs.existsSync(filePath)) {
+        return {}
+    }
+    let rawdata = fs.readFileSync(filePath);
+    return JSON.parse(rawdata)
+}
 /**
  *
  * @param {string} filePath
@@ -19,3 +27,4 @@ function deleteFile(filePath, sync=true, callback=()=>{}) {
 }
 
 module.exports.deleteFile = deleteFile
+module.exports.openJsonFile = openJsonFile

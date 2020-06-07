@@ -1,5 +1,5 @@
 const speechToText = require('microsoft-cognitiveservices-speech-sdk')
-const keys = require('../keys.json')
+const keys = require('../keys.js').Key
 
 function runSpeechRecognition(audioStream, userTag, callback) {
     const pushStream = speechToText.AudioInputStream.createPushStream(speechToText.AudioStreamFormat.getWaveFormatPCM(48000, 16, 2));
@@ -10,7 +10,7 @@ function runSpeechRecognition(audioStream, userTag, callback) {
     })
 
     const audioConfig = speechToText.AudioConfig.fromStreamInput(pushStream)
-    const speechConfig = speechToText.SpeechConfig.fromSubscription(keys.microsoft_token_1, keys.microsoft_location)
+    const speechConfig = speechToText.SpeechConfig.fromSubscription(keys.get("microsoft_token_1"), keys.get("microsoft_location"))
     speechConfig.speechRecognitionLanguage = "en-US"
 
     let recognizer = new speechToText.SpeechRecognizer(speechConfig, audioConfig)

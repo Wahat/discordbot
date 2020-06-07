@@ -1,8 +1,8 @@
 const google = require('@google-cloud/speech')
-const keys = require('../keys.json')
+const keys = require('../keys.js').Key
 const audioUtils = require('../audio_utils.js')
 
-const client = new google.SpeechClient({'projectId': keys.google_project_id, 'keyFileName': keys.google_keyFileName});
+const client = new google.SpeechClient({'projectId': keys.get("google_project_id"), 'keyFileName': keys.get("google_keyFileName")});
 function runSpeechRecognition(audioStream, userTag, callback) {
     const request = {
         config: {

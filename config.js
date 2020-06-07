@@ -1,4 +1,5 @@
-const fs = require("fs");
+const fs = require('fs');
+const fileUtils = require('./file_utils.js')
 
 class ConfigHandler {
     constructor() {
@@ -18,8 +19,7 @@ class ConfigHandler {
         if (!fs.existsSync(path)) {
             fs.writeFileSync(path, this.buildDefaultConfig());
         }
-        let rawdata = fs.readFileSync(path);
-        return JSON.parse(rawdata)
+        return fileUtils.openJsonFile(path)
     }
 
     saveConfig(guildId, guildConfig) {

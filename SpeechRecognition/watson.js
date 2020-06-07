@@ -1,12 +1,12 @@
 const SpeechToText = require('ibm-watson/speech-to-text/v1');
 const auth = require('ibm-watson/auth')
-const keys = require('../keys.json')
+const keys = require('../keys.js').Key
 
 const speechToText = new SpeechToText({
     authenticator: new auth.IamAuthenticator({
-        apikey: keys["watson_token"]
+        apikey: keys.get("watson_token")
     }),
-    url: keys["watson_url"]
+    url: keys.get("watson_url")
 });
 
 function runSpeechRecognition(audioStream, userTag, callback) {

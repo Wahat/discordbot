@@ -123,3 +123,6 @@ configs/
 
 SpeechRecognition/PythonSpeechRecognition/venv
 keys.json
+keys
+
+snowboy/
