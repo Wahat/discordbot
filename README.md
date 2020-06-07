@@ -31,6 +31,12 @@
 
 ## Setup
 
+### Docker
+
+`docker build --build-arg git_token=<token> -t <container_name> --no-cache .`
+
+`docker run --name=<name>--env-file=keys <container_name>`
+
 ## Features
 
 ## Optional Features

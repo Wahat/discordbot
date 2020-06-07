@@ -1,8 +1,8 @@
 FROM node:12-buster
-RUN mkdir -p /home/node/discordbot/node_modules && chown -R node:node /home/node/discordbot
-WORKDIR /home/node/discordbot
+WORKDIR /home/node
 
-COPY package*.json ./
+ARG git_token
+RUN git clone -b v1.3.0-alpha https://${git_token}:x-oauth-basic@github.com/henrymxu/discordbot.git discordbot
 
 RUN apt-get update && apt-get install -y \
   lame \
@@ -10,10 +10,17 @@ RUN apt-get update && apt-get install -y \
   cmake \
   libmagic-dev \
   libatlas-base-dev
- 
+
+WORKDIR /home/node/discordbot
 run npm install
-COPY --chown=node:node . .
 RUN chmod +x setup.sh
 RUN ./setup.sh
+
+# Python voice recognition
+#RUN pip install SpeechRecognition
+
+# Other
+RUN mkdir -p configs
+RUN mkdir -p clips
 
 CMD ["node", "main.js"]
