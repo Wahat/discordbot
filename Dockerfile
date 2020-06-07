@@ -2,7 +2,7 @@ FROM node:12-buster
 WORKDIR /home/node
 
 ARG git_token
-RUN git clone -b v1.3.0-alpha https://${git_token}:x-oauth-basic@github.com/henrymxu/discordbot.git discordbot
+RUN git clone -b master https://${git_token}:x-oauth-basic@github.com/henrymxu/discordbot.git discordbot
 
 RUN apt-get update && apt-get install -y \
   lame \
