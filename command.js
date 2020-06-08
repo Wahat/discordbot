@@ -8,11 +8,11 @@ const commandConfig = require(`./commands_config.json`)
 class CommandHandler {
     /**
      *
-     * @param {DJ} dj
+     * @param {DJHandler} dj
      * @param {AudioHandler} audioHandler
      */
     constructor(dj, audioHandler) {
-        /** @member {DJ} **/
+        /** @member {DJHandler} **/
         this.dj = dj
         /** @member {AudioHandler} **/
         this.audioHandler = audioHandler
@@ -60,15 +60,14 @@ class CommandHandler {
                     ? yargs[commandArg["flag"]].join(' ') : yargs[commandArg["flag"]]
                 if (commandArg["required"] && !parsedArgs[commandArg["name"]]) {
                     this.textResponder.respond(msgContext,
-                        embedder.createErrorEmbed(`${commandType} requires ${commandArg["name"]} parameter (${commandArg["flag"]})`),
-                        "error")
+                        embedder.createBasicMessageEmbed(`${commandType} requires ${commandArg["name"]} parameter (${commandArg["flag"]})`))
                     failedArg = true
                     return
                 }
                 if (commandArg["integer"] && !isNumeric(parsedArgs[commandArg["name"]])) {
                     this.textResponder.respond(msgContext,
-                        embedder.createErrorEmbed(`${commandArg["name"]} parameter must be integer`),
-                        "error")
+                        embedder.createBasicMessageEmbed(`${commandArg["name"]} parameter must be integer`),
+                        'error')
                     failedArg = true
                 } else if (commandArg["integer"]) {
                     parsedArgs[commandArg["name"]] = parseInt(parsedArgs[commandArg["name"]])
@@ -115,8 +114,7 @@ function preParseSpecificArgumentsIfNeeded(textResponder, msgContext, arg, parse
             parsedArg = parseUser(msgContext, parsedArg)
             if (!parsedArg) {
                 textResponder.respond(msgContext,
-                    embedder.createErrorEmbed(`Invalid user provided (Display name / Nickname / Mention)`),
-                    "error")
+                    embedder.createBasicMessageEmbed(`Invalid user provided (Display name / Nickname / Mention)`))
                 throw('Invalid user provided')
             }
     }

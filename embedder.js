@@ -30,7 +30,7 @@ class Embedder {
      */
     createQueueEmbed(queue, song) {
         if (queue.length === 0) {
-            return this.createErrorEmbed('Queue is empty')
+            return this.createBasicMessageEmbed('Queue is empty')
         }
         let queueString = ""
         queue.forEach(song => {
@@ -49,7 +49,7 @@ class Embedder {
      */
     createSongDetailsEmbed(queue, index) {
         if (index < 0 || !queue[index]) {
-            return this.createErrorEmbed('Invalid index provided')
+            return this.createBasicMessageEmbed('Invalid index provided')
         }
         const song = queue[index]
         const title = index === 0 ? 'Current Song' : `Song ${index}`
@@ -95,7 +95,7 @@ class Embedder {
      *
      * @param {string} message
      */
-    createErrorEmbed(message) {
+    createBasicMessageEmbed(message) {
         return this.getBaseEmbed()
             .setDescription(`\`\`\`${message}\`\`\``)
     }

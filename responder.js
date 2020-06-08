@@ -51,13 +51,15 @@ class TextResponder {
      * @param {string} type
      * @param callback
      */
-    respond(context, embed, type, callback=()=>{}) {
+    respond(context, embed, type='', callback=()=>{}) {
         const textChannel = context.getTextChannel()
         if (!textChannel) {
             return
         }
         textChannel.send(embed).then(msg => {
-            this.getGuildMessages(context).set(type, msg)
+            if (type) {
+                this.getGuildMessages(context).set(type, msg)
+            }
             callback(msg)
         })
     }
@@ -125,7 +127,7 @@ class VoiceResponder {
 
     /**
      *
-     * @param {DJ} dj
+     * @param {DJHandler} dj
      * @param {VoiceConnectionMessageContext} context
      * @param message
      * @param voice

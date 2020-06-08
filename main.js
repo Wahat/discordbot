@@ -2,7 +2,7 @@ const Discord = require('discord.js')
 const Guild = require('./guild.js').GuildHandler
 const Audio = require('./audio.js')
 const Command = require('./command.js')
-const DJ = require('./dj.js').DJ
+const DJ = require('./dj.js').DJHandler
 
 const client = new Discord.Client()
 

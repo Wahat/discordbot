@@ -97,7 +97,7 @@ class AudioHandler {
             if (this.recentlyRemoved.has(user.id)) {
                 console.log(`time difference ${Date.now() - this.recentlyRemoved.get(user.id)}`)
             }
-            if (this.recentlyRemoved.has(user.id) && (Date.now() - this.recentlyRemoved.get(user.id)) < 10) {
+            if (this.recentlyRemoved.has(user.id) && (Date.now() - this.recentlyRemoved.get(user.id)) < 300) {
                 this.recentlyRemoved.delete(user.id)
                 return
             }
