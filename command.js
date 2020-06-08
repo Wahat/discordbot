@@ -21,8 +21,8 @@ class CommandHandler {
         /** @member {EventEmitter | module:events.internal.EventEmitter} **/
         this.eventReceiver = new events.EventEmitter()
 
-        this.eventReceiver.on('playAudioAck', (context, mode, callback) => {
-            this.dj.playAudioAck(context, mode, callback)
+        this.eventReceiver.on('playHotwordAudioAck', (context, mode, callback) => {
+            this.dj.playHotwordAudioAck(context, mode, callback)
         })
 
         this.eventReceiver.on('command', (context, msgContext) => {

@@ -151,7 +151,7 @@ class AudioHandler {
                 return
             }
             this.isListeningToCommand = true
-            this.commandsEventEmitter.emit('playAudioAck', context, 0)
+            this.commandsEventEmitter.emit('playHotwordAudioAck', context, 0)
             const recognitionStream = new stream.PassThrough()
             recorderStream.pipe(recognitionStream)
             speechEngine.runSpeechRecognition(recognitionStream, user.tag, data => {
@@ -160,7 +160,7 @@ class AudioHandler {
                     context.getTextChannel()))
             })
             setTimeout(() => {
-                this.commandsEventEmitter.emit('playAudioAck', context, 1, () => {
+                this.commandsEventEmitter.emit('playHotwordAudioAck', context, 1, () => {
                     recognitionStream.end()
                 })
                 this.isListeningToCommand = false

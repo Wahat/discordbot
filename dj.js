@@ -26,7 +26,7 @@ class DJHandler {
                 connection: context.getVoiceConnection(),
                 queue: [],
                 volume: 0.25,
-                isPlaying: true,
+                isPlaying: false,
             };
             this.guildDJs.set(guildId, dj)
         }
@@ -82,8 +82,10 @@ class DJHandler {
      */
     skip(context) {
         const dj = this.getGuildDJ(context)
-        this.playNext(context, dj)
-        textResponder.react(context, '👌')
+            this.playNext(context)
+        if (!textResponder.react(context, '👌')) {
+            textResponder.respond(context, embedder.createBasicMessageEmbed('Skipping!'))
+        }
     }
 
     /**
@@ -92,14 +94,13 @@ class DJHandler {
      */
     stop(context) {
         const dj = this.getGuildDJ(context)
-        dj.queue = [];
-
         if (dj.connection.dispatcher) {
             if (!textResponder.react(context, '👌')) {
                 textResponder.respond(context, embedder.createBasicMessageEmbed('Stopping!'))
             }
             dj.connection.dispatcher.end();
         }
+        this.guildDJs.delete(context.getGuild().id)
     }
 
     /**
@@ -108,12 +109,12 @@ class DJHandler {
      */
     pause(context) {
         const dj = this.getGuildDJ(context)
-        if (dj.connection.dispatcher == null) {
+        if (!dj.connection.dispatcher) {
             return
         }
-        if (dj.connection.dispatcher) {
-            textResponder.react(context, '👌')
-            dj.connection.dispatcher.pause()
+        dj.connection.dispatcher.pause()
+        if (!textResponder.react(context, '👌')) {
+            textResponder.respond(context, embedder.createBasicMessageEmbed('Pausing!'))
         }
     }
 
@@ -123,12 +124,12 @@ class DJHandler {
      */
     resume(context) {
         const dj = this.getGuildDJ(context)
-        if (dj.connection.dispatcher == null) {
+        if (!dj.connection.dispatcher) {
             return
         }
-        if (dj.connection.dispatcher) {
-            textResponder.react(context, '👌')
-            dj.connection.dispatcher.resume()
+        dj.connection.dispatcher.resume()
+        if (!textResponder.react(context, '👌')) {
+            textResponder.respond(context, embedder.createBasicMessageEmbed('Pausing!'))
         }
     }
 
@@ -225,6 +226,8 @@ class DJHandler {
             return
         }
         if (!resume) {
+            textResponder.respond(context, embedder.createNowPlayingEmbed(song), 'play')
+            await voiceResponder.respond(this, context, `Playing ${song.title}`)
             song.stream = await ytdl(song.url, {
                 quality: 'highestaudio',
                 highWaterMark: 1024 * 1024 * 10,
@@ -233,29 +236,18 @@ class DJHandler {
             song.stream.resume()
         }
 
-        if (dj.connection.dispatcher) { // Clear listeners
-            dj.connection.dispatcher.removeAllListeners('start')
-            dj.connection.dispatcher.removeAllListeners('error')
-            dj.connection.dispatcher.removeAllListeners('finish')
-            dj.connection.dispatcher.end()
-        }
-        dj.connection.play(song.stream, {
-                type: 'opus',
-                volume: dj.volume,
-                highWaterMark: 48
-            })
-            .on('start', () => {
-                if (!resume) {
-                    textResponder.respond(context, embedder.createNowPlayingEmbed(song), 'play')
-                    voiceResponder.respond(this, context, `Playing ${song.title}`)
-                }
-            })
-            .on('finish', () => {
-                textResponder.remove(context, 'play')
-                textResponder.remove(context, 'queue')
-                this.playNext(context, dj)
-            })
-            .on('error', error => console.error(error))
+        const dispatcher = dj.connection.play(song.stream, {
+            type: 'opus',
+            volume: dj.volume,
+            highWaterMark: 48
+        })
+        dispatcher.on('finish', () => {
+            textResponder.remove(context, 'play')
+            textResponder.remove(context, 'queue')
+            this.playNext(context)
+        })
+        dispatcher.on('error', error => console.error(error))
+
         if (song && !resume) {
             console.log(`Start playing: **${song.title}**`)
         }
@@ -264,9 +256,9 @@ class DJHandler {
     /**
      *
      * @param {VoiceConnectionMessageContext} context
-     * @param {Object} dj
      */
-    playNext(context, dj) {
+    playNext(context) {
+        const dj = this.getGuildDJ(context)
         dj.queue.shift();
         this.playSong(context, dj.queue[0]);
     }

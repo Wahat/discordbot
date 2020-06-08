@@ -50,11 +50,12 @@ class TextResponder {
      * @param {MessageEmbed} embed
      * @param {string} type
      * @param callback
+     * @return boolean
      */
     respond(context, embed, type='', callback=()=>{}) {
         const textChannel = context.getTextChannel()
         if (!textChannel) {
-            return
+            return false
         }
         textChannel.send(embed).then(msg => {
             if (type) {
@@ -62,6 +63,7 @@ class TextResponder {
             }
             callback(msg)
         })
+        return true
     }
 
     /**
@@ -131,12 +133,14 @@ class VoiceResponder {
      * @param {VoiceConnectionMessageContext} context
      * @param message
      * @param voice
-     * @param callback
+     * @return Promise<>
      */
-    respond(dj, context, message, voice, callback=()=>{}) {
-        speechGenerator.generateSpeechFromText(message, voice, stream => {
-            dj.playAudioEvent(context, stream, 'opus', ()=>{
-                callback()
+    respond(dj, context, message, voice) {
+        return new Promise((res, rej) => {
+            speechGenerator.generateSpeechFromText(message, voice, stream => {
+                dj.playAudioEvent(context, stream, 'opus', () => {
+                    res()
+                })
             })
         })
     }

@@ -30,7 +30,7 @@ class Recorder extends stream.Transform {
 
     _transform(chunk, encoding, callback) {
         if (!this.writing) {
-            if (this.rollingBuffer.length > 1000) {
+            if (this.rollingBuffer.length > 500) {
                 this.rollingBuffer.shift()
             }
             this.rollingBuffer.push(chunk)
