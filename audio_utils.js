@@ -4,13 +4,13 @@ const prism = require('prism-media')
 const fs = require('fs')
 const wav = require('wav')
 
-
 /**
- *
+ * This is required for the bot to be able to listen.
+ * discord.js has this, but sometimes it does not work.
  * @param {VoiceConnection} connection
  */
 function playSilentAudioStream(connection) {
-    connection.play(createSilenceStream(), { type: "opus" }); // This is required for the bot to be able to listen
+    connection.play(createSilenceStream(), { type: "opus" });
     setTimeout(() => {
         if (connection.dispatcher) {
             connection.dispatcher.destroy()

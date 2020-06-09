@@ -7,7 +7,7 @@ const recorder = require('./recorder.js')
 const embedder = require('./embedder.js').Embedder
 const fs = require('fs')
 const textResponder = require('./responder.js').TextResponder
-const Guild = require('./guild.js').GuildHandler
+const guild = require('./guild.js').GuildHandler
 
 class AudioHandler {
     constructor() {
@@ -62,7 +62,7 @@ class AudioHandler {
     registerGuildsEventReceiver(eventReceiver) {
         this.guildsEventReceiver = eventReceiver
         this.guildsEventReceiver.on('userLeftChannel', (guildId, userId) => {
-            const context = Guild.getGuildContextFromId(guildId)
+            const context = guild.getGuildContextFromId(guildId)
             if (!context) {
                 return
             }

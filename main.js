@@ -3,10 +3,9 @@ const Guild = require('./guild.js').GuildHandler
 const Audio = require('./audio.js')
 const Command = require('./command.js')
 const DJ = require('./dj.js').DJHandler
+const keys = require('./keys.js').Key
 
 const client = new Discord.Client()
-
-const keys = require('./keys.js').Key
 
 client.on('ready', () => {
     console.log(`Logged in as ${client.user.tag}!`)

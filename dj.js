@@ -172,8 +172,9 @@ class DJHandler {
             currentSong.stream.pause()
         }
         this.getGuildDJ(context).connection.play(audioStream, {
-            type: type
-        }).on('finish', () => {
+            type: type,
+            volume: this.getGuildDJ(context).volume
+        }).once('finish', () => {
             this.playSong(context, currentSong, true)
             callback()
         })
@@ -241,12 +242,12 @@ class DJHandler {
             volume: dj.volume,
             highWaterMark: 48
         })
-        dispatcher.on('finish', () => {
+        dispatcher.once('finish', () => {
             textResponder.remove(context, 'play')
             textResponder.remove(context, 'queue')
             this.playNext(context)
         })
-        dispatcher.on('error', error => console.error(error))
+        dispatcher.once('error', error => console.error(error))
 
         if (song && !resume) {
             console.log(`Start playing: **${song.title}**`)
