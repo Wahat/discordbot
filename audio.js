@@ -25,7 +25,7 @@ class AudioHandler {
 
     /**
      *
-     * @param {GuildContext | VoiceConnectionMessageContext} context
+     * @param {GuildContext | MessageContext} context
      * @returns {GuildAudioContext}
      */
     getGuildAudioContext(context) {
@@ -156,8 +156,8 @@ class AudioHandler {
             recorderStream.pipe(recognitionStream)
             speechEngine.runSpeechRecognition(recognitionStream, user.tag, data => {
                 console.log(`${user.tag} said ${data}`)
-                this.commandsEventEmitter.emit('command', context, new ctx.MessageContext(user, data.toString(),
-                    context.getTextChannel()))
+                this.commandsEventEmitter.emit('command', new ctx.MessageContext(user, data.toString(),
+                    context.getTextChannel(), null, connection))
             })
             setTimeout(() => {
                 this.commandsEventEmitter.emit('playHotwordAudioAck', context, 1, () => {
@@ -170,7 +170,7 @@ class AudioHandler {
 
     /**
      *
-     * @param {VoiceConnectionMessageContext} context
+     * @param {MessageContext} context
      * @param {User} user
      * @param {string} caption
      * @param length
@@ -200,7 +200,7 @@ class AudioHandler {
 
     /**
      *
-     * @param {VoiceConnectionMessageContext} context
+     * @param {MessageContext} context
      * @param {User} user
      * @param length
      */

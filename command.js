@@ -25,8 +25,8 @@ class CommandHandler {
             this.dj.playHotwordAudioAck(context, mode, callback)
         })
 
-        this.eventReceiver.on('command', (context, msgContext) => {
-            this.onCommandReceived(context, msgContext)
+        this.eventReceiver.on('command', (msgContext) => {
+            this.onCommandReceived(msgContext)
         })
 
         this.eventReceiver.on('playAudioWavStream', (context, stream) => {
@@ -40,10 +40,9 @@ class CommandHandler {
 
     /**
      *
-     * @param {GuildContext} context
      * @param {MessageContext} msgContext
      */
-    onCommandReceived(context, msgContext) {
+    onCommandReceived(msgContext) {
         const yargs = require('yargs-parser')(msgContext.getMessage())
         let commandType = parseCommand(yargs['_'].shift().toLowerCase())
         if (commandConfig["commands"][commandType]) {
@@ -94,8 +93,7 @@ class CommandHandler {
             if (invalidArg) {
                 return
             }
-            let commandContext = new ctx.VoiceConnectionMessageContext(msgContext, context.getVoiceConnection())
-            this[commandExec["handler"]][commandExec["name"]](commandContext, ...execArgs)
+            this[commandExec["handler"]][commandExec["name"]](msgContext, ...execArgs)
         }
     }
 }

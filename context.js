@@ -41,32 +41,19 @@ class GuildContext {
     }
 }
 
-class MessageContext {
-    constructor(user, message, textChannel, discordMessage = null) {
+class MessageContext extends GuildContext {
+    constructor(user, message, textChannel, discordMessage = null, voiceConnection = null) {
+        super(voiceConnection, textChannel)
         /** @member {User} **/
         this.user = user
         /** @member {string} **/
         this.message = message
-        /** @member {TextChannel} **/
-        this.textChannel = textChannel
         /** @member {Message | null} **/
         this.discordMessage = discordMessage
     }
 
-    /**
-     *
-     * @returns {Guild}
-     */
-    getGuild() {
-        return this.textChannel.guild
-    }
-
-    /**
-     *
-     * @returns {any}
-     */
-    getConfig() {
-        return configHandler.retrieveConfig(this.getGuild().id)
+    hasVoiceConnection() {
+        return this.voiceConnection != null
     }
 
     /**
@@ -95,14 +82,6 @@ class MessageContext {
 
     /**
      *
-     * @returns {TextChannel}
-     */
-    getTextChannel() {
-        return this.textChannel
-    }
-
-    /**
-     *
      * @param {string} name
      * @returns {GuildMember}
      */
@@ -125,21 +104,6 @@ class MessageContext {
             console.log(`Found user ${user.displayName} using (${user.id})`)
         }
         return user
-    }
-}
-
-class VoiceConnectionMessageContext extends MessageContext {
-    constructor(messageContext, voiceConnection) {
-        super(messageContext.user, messageContext.message, messageContext.textChannel, messageContext.discordMessage);
-        this.voiceConnection = voiceConnection
-    }
-
-    /**
-     *
-     * @returns {VoiceConnection}
-     */
-    getVoiceConnection() {
-        return this.voiceConnection
     }
 }
 
@@ -187,5 +151,4 @@ class GuildAudioContext {
 
 module.exports.GuildContext = GuildContext
 module.exports.MessageContext = MessageContext
-module.exports.VoiceConnectionMessageContext = VoiceConnectionMessageContext
 module.exports.GuildAudioContext = GuildAudioContext

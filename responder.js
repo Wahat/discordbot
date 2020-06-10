@@ -130,7 +130,7 @@ class VoiceResponder {
     /**
      *
      * @param {DJHandler} dj
-     * @param {VoiceConnectionMessageContext} context
+     * @param {MessageContext} context
      * @param message
      * @param voice
      * @return Promise<>

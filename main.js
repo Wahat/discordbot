@@ -32,6 +32,6 @@ audioHandler.registerGuildsEventReceiver(Guild.eventEmitter)
 Guild.registerWhenToJoinListener(client, (context, msgContext) => {
     audioHandler.registerConnection(context)
     if (msgContext != null) {
-        commandHandler.eventReceiver.emit('command', context, msgContext)
+        commandHandler.eventReceiver.emit('command', msgContext)
     }
 })

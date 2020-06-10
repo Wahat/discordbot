@@ -143,6 +143,9 @@ class GuildHandler {
      */
     joinVoiceChannel(voiceChannel, textChannel, callback, msgContext = null) {
         voiceChannel.join().then(connection => {
+            if (msgContext) {
+                msgContext.voiceConnection = connection
+            }
             callback(this.getGuildContext(connection, textChannel), msgContext)
         })
     }

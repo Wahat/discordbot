@@ -16,7 +16,7 @@ class DJHandler {
 
     /**
      *
-     * @param {VoiceConnectionMessageContext} context
+     * @param {MessageContext} context
      * @returns {Object}
      */
     getGuildDJ(context) {
@@ -39,7 +39,7 @@ class DJHandler {
 
     /**
      *
-     * @param {VoiceConnectionMessageContext} context
+     * @param {MessageContext} context
      * @param {int} volume
      * @param relative
      */
@@ -59,7 +59,7 @@ class DJHandler {
 
     /**
      *
-     * @param {VoiceConnectionMessageContext} context
+     * @param {MessageContext} context
      */
     queue(context) {
         const dj = this.getGuildDJ(context)
@@ -68,7 +68,7 @@ class DJHandler {
 
     /**
      *
-     * @param {VoiceConnectionMessageContext} context
+     * @param {MessageContext} context
      * @param index
      */
     song(context, index) {
@@ -78,7 +78,7 @@ class DJHandler {
 
     /**
      *
-     * @param {VoiceConnectionMessageContext} context
+     * @param {MessageContext} context
      */
     skip(context) {
         const dj = this.getGuildDJ(context)
@@ -90,7 +90,7 @@ class DJHandler {
 
     /**
      *
-     * @param {VoiceConnectionMessageContext} context
+     * @param {MessageContext} context
      */
     stop(context) {
         const dj = this.getGuildDJ(context)
@@ -105,7 +105,7 @@ class DJHandler {
 
     /**
      *
-     * @param {VoiceConnectionMessageContext} context
+     * @param {MessageContext} context
      */
     pause(context) {
         const dj = this.getGuildDJ(context)
@@ -120,7 +120,7 @@ class DJHandler {
 
     /**
      *
-     * @param {VoiceConnectionMessageContext} context
+     * @param {MessageContext} context
      */
     resume(context) {
         const dj = this.getGuildDJ(context)
@@ -139,7 +139,7 @@ class DJHandler {
 
     /**
      *
-     * @param {VoiceConnectionMessageContext} context
+     * @param {MessageContext} context
      * @param {int} mode - 0 for start, 1 for end
      * @param callback
      */
@@ -151,7 +151,7 @@ class DJHandler {
 
     /**
      *
-     * @param {VoiceConnectionMessageContext} context
+     * @param {MessageContext} context
      * @param stream
      */
     playAudioWavStream(context, stream) {
@@ -160,7 +160,7 @@ class DJHandler {
 
     /**
      * Interrupts current song to play an audio clip, then resumes song
-     * @param {VoiceConnectionMessageContext} context
+     * @param {MessageContext} context
      * @param {ReadableStream | Readable} audioStream
      * @param {string} type
      * @param callback
@@ -182,7 +182,7 @@ class DJHandler {
 
     /**
      *
-     * @param {VoiceConnectionMessageContext} context
+     * @param {MessageContext} context
      * @param {string} args
      * @returns {Promise<void>}
      */
@@ -213,7 +213,7 @@ class DJHandler {
 
     /**
      *
-     * @param {VoiceConnectionMessageContext} context
+     * @param {MessageContext} context
      * @param {Object} song
      * @param {boolean} resume
      * @returns {Promise<void>}
@@ -256,7 +256,7 @@ class DJHandler {
 
     /**
      *
-     * @param {VoiceConnectionMessageContext} context
+     * @param {MessageContext} context
      */
     playNext(context) {
         const dj = this.getGuildDJ(context)
