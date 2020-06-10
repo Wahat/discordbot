@@ -25,7 +25,7 @@ class DJHandler {
             const dj = {
                 connection: context.getVoiceConnection(),
                 queue: [],
-                volume: 0.25,
+                volume: context.getConfig()["volume"],
                 isPlaying: false,
             };
             this.guildDJs.set(guildId, dj)

@@ -44,7 +44,7 @@ class AudioHandler {
     resetGuild(context) {
         this.getGuildAudioContext(context).clearAudioStreams()
         snowboy.clearDetectors()
-        this.guilds.delete(context.getGuildId())
+        this.guilds.delete(context.getGuild().id)
     }
 
     /**
@@ -80,7 +80,7 @@ class AudioHandler {
      */
     registerConnection(context) {
         const connection = context.getVoiceConnection()
-        if (this.guilds.has(context.getGuildId()) || !connection) {
+        if (this.guilds.has(context.getGuild().id) || !connection) {
             return
         }
         audioUtils.playSilentAudioStream(connection)

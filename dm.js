@@ -1,4 +1,7 @@
 const commands = require('./dm_config.json')
+const configHandler = require('./config.js').ConfigHandler
+
+const defaultConfig = require('./default_config.json')
 
 class DMHandler {
     constructor() {
@@ -38,12 +41,12 @@ class DMHandler {
             return
         }
         let command = commands["commands"][commandType]
-        this.messageStack.set(client.user.id, {
+        this.messageStack.set(msg.author.id, {
             "upcoming": command["stack"],
             "completed": [],
-            "variables": {}
+            "variables": [],
+            "step": "prompt",
         })
-        this.resumeCommandProcess(client, msg)
     }
 
     /**
@@ -52,18 +55,40 @@ class DMHandler {
      * @param {Message} msg
      */
     resumeCommandProcess(client, msg) {
-        let command = this.messageStack.get(client.user.id).upcoming.shift()
-        let arg = msg.content
-        switch(command["type"]) {
-            case "request":
-                break
-            case "response":
-                break
+        const stack = this.messageStack.get(msg.author.id)
+        if (stack.step === "prompt") {
+            msg.reply(commands["commands"][stack.upcoming[0]]["prompt"])
+            stack.step = "response"
+            return
         }
+        let commandType = stack.upcoming.shift()
+        let command = commands["commands"][commandType]
+        let invalidArg = false
+        command["args"].forEach(arg => {
+            let parsedArg = preParseArgs(client, msg, arg)
+            console.log(`Parsed arg ${parsedArg}`)
+            if (command["validation"] && !validateArgs(command["validation"], parsedArg)) {
+                invalidArg = true
+            }
+            stack.variables.push(parsedArg)
+        })
+        if (invalidArg) {
+            msg.reply("Invalid Argument, try again")
+            stack.upcoming.unshift(commandType)
+            return
+        }
+        stack.step = "prompt"
+        stack.completed.push(commandType)
+        if (stack.upcoming.length === 0) {
+            configHandler.setNewConfigParameter(...stack.variables)
+            this.messageStack.delete(msg.author.id)
+            return
+        }
+        this.resumeCommandProcess(client, msg)
     }
 }
 
-function preParseCommands(client, msg, arg) {
+function preParseArgs(client, msg, arg) {
     switch(arg) {
         case "guilds":
             return getUserGuilds(client, msg.author)
@@ -72,6 +97,17 @@ function preParseCommands(client, msg, arg) {
         case "guild":
             return getGuildFromName(client, msg.author, msg.content)
     }
+    return msg.content
+}
+
+function validateArgs(validation, arg) {
+    switch(validation) {
+        case "guild":
+            return arg
+        case "type":
+            return defaultConfig[arg]
+    }
+    return true
 }
 
 /**

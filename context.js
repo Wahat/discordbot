@@ -6,7 +6,6 @@ class GuildContext {
         this.voiceConnection = voiceConnection
         /** @member {TextChannel} **/
         this.textChannel = textChannel
-        this.config = configHandler.retrieveConfig(this.getGuildId())
     }
 
     /**
@@ -30,7 +29,7 @@ class GuildContext {
      * @returns {any}
      */
     getConfig() {
-        return this.config
+        return configHandler.retrieveConfig(this.getGuild().id)
     }
 
     /**
@@ -40,18 +39,10 @@ class GuildContext {
     getGuild() {
         return this.textChannel.guild ? this.textChannel.guild : this.voiceConnection.guild
     }
-
-    /**
-     *
-     * @returns {Snowflake}
-     */
-    getGuildId() {
-        return this.getGuild().id
-    }
 }
 
 class MessageContext {
-    constructor(user, message, textChannel, discordMessage=null) {
+    constructor(user, message, textChannel, discordMessage = null) {
         /** @member {User} **/
         this.user = user
         /** @member {string} **/
@@ -68,6 +59,14 @@ class MessageContext {
      */
     getGuild() {
         return this.textChannel.guild
+    }
+
+    /**
+     *
+     * @returns {any}
+     */
+    getConfig() {
+        return configHandler.retrieveConfig(this.getGuild().id)
     }
 
     /**
@@ -150,10 +149,20 @@ class GuildAudioContext {
         this.audioStreams = new Map()
     }
 
+    /**
+     *
+     * @param {string} id
+     * @returns {boolean}
+     */
     hasAudioStream(id) {
         return this.audioStreams.has(id)
     }
 
+    /**
+     *
+     * @param {string} id
+     * @param {Recorder} audioStream
+     */
     setAudioStream(id, audioStream) {
         this.audioStreams.set(id, audioStream)
     }
