@@ -14,7 +14,7 @@ class GuildHandler {
 
     /**
      *
-     * @param guildId
+     * @param {string} guildId
      * @returns {GuildContext | null}
      */
     getGuildContextFromId(guildId) {

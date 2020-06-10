@@ -39,6 +39,7 @@ class ConfigHandler {
         return JSON.stringify({
             "aliases": {},
             "nicknames": {},
+            "defaultTextChannel": "",
             "prefix": "?",
         })
     }

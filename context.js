@@ -146,6 +146,7 @@ class VoiceConnectionMessageContext extends MessageContext {
 
 class GuildAudioContext {
     constructor() {
+        /** @member {Map<String, Recorder>} **/
         this.audioStreams = new Map()
     }
 

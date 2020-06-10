@@ -2,6 +2,7 @@ const fileUtils = require('./file_utils.js')
 
 class Keys {
     constructor() {
+        /** @member {Map<string, string>} **/
         this.keys = new Map()
         this.loadKeysFromJson()
     }
