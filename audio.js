@@ -157,10 +157,10 @@ class AudioHandler {
                 console.log(`${user.tag} said ${data}`)
                 this.commandsEventEmitter.emit('command', new ctx.MessageContext(user, data.toString(),
                     context.getTextChannel(), null, connection))
-                recognitionStream.end()
-                recognitionStream.destroy()
             })
             setTimeout(() => {
+                recognitionStream.end()
+                recognitionStream.destroy()
                 this.commandsEventEmitter.emit('playHotwordAudioAck', context, 1)
                 this.isListeningToCommand = false
             }, 3000)
