@@ -1,8 +1,7 @@
 FROM node:12-buster
 WORKDIR /home/node
 
-ARG GIT_TOKEN
-RUN git clone -b v1.4.0-alpha https://${GIT_TOKEN}:x-oauth-basic@github.com/henrymxu/discordbot.git discordbot
+RUN git clone -b master https://github.com/henrymxu/discordbot.git discordbot
 
 RUN apt-get update && apt-get install -y \
   git \
