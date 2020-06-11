@@ -15,6 +15,10 @@ client.on('invalidated', () => {
     console.log('Session invalidated')
 })
 
+setInterval(() => {
+    console.log(`Memory Usage: ${process.memoryUsage()}`)
+}, 10000);
+
 const audioHandler = new Audio.AudioHandler()
 const commandHandler = new Command.CommandHandler(DJ, audioHandler)
 audioHandler.registerCommandsEventEmitter(commandHandler.eventReceiver)

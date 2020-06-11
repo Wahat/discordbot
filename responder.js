@@ -28,6 +28,10 @@ class TextResponder {
         this.respond(context, embedder.getBaseEmbed().setDescription('help'), 'help')
     }
 
+    showMemoryUsage(context) {
+        this.respond(context, embedder.getBaseEmbed().setDescription(`Memory used ${process.memoryUsage()}`))
+    }
+
     /**
      *
      * @param {MessageContext} context

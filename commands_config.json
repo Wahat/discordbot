@@ -12,6 +12,18 @@
         "args": []
       }
     },
+    "memory": {
+      "description": "Memory command",
+      "type": "admin",
+      "args": [
+
+      ],
+      "command": {
+        "handler": "textResponder",
+        "name": "showMemory",
+        "args": []
+      }
+    },
     "join": {
       "description": "Join sender's current voice channel",
       "type": "voice",
