@@ -4,13 +4,13 @@ const prism = require('prism-media')
 const fs = require('fs')
 const wav = require('wav')
 
-
 /**
- *
+ * This is required for the bot to be able to listen.
+ * discord.js has this, but sometimes it does not work.
  * @param {VoiceConnection} connection
  */
 function playSilentAudioStream(connection) {
-    connection.play(createSilenceStream(), { type: "opus" }); // This is required for the bot to be able to listen
+    connection.play(createSilenceStream(), { type: "opus" });
     setTimeout(() => {
         if (connection.dispatcher) {
             connection.dispatcher.destroy()
@@ -102,6 +102,16 @@ function writeStreamToMp3File(audioBuffer, outputPath, title, author, callback) 
  * @returns {ReadableStream}
  */
 function convertMp3FileToOpusStream(inputPath) {
+    const mp3Stream = fs.createReadStream(inputPath);
+    return convertMp3StreamToOpusStream(mp3Stream)
+}
+
+/**
+ *
+ * @param {ReadableStream | ReadStream} inputStream
+ * @returns {ReadableStream}
+ */
+function convertMp3StreamToOpusStream(inputStream) {
     const opus = new prism.opus.Encoder({rate: 48000, channels: 2, frameSize: 960});
     const transcoder = new prism.FFmpeg({
         args: [
@@ -112,8 +122,7 @@ function convertMp3FileToOpusStream(inputPath) {
             '-ac', '2',
         ],
     });
-    const mp3Stream = fs.createReadStream(inputPath);
-    mp3Stream.pipe(transcoder).pipe(opus)
+    inputStream.pipe(transcoder).pipe(opus)
     return opus
 }
 
@@ -146,5 +155,6 @@ module.exports.playSilentAudioStream = playSilentAudioStream
 module.exports.createStereoToMonoTransformStream = createStereoToMonoTransformStream
 module.exports.writeStreamToMp3File = writeStreamToMp3File
 module.exports.convertMp3FileToOpusStream = convertMp3FileToOpusStream
+module.exports.convertMp3StreamToOpusStream = convertMp3StreamToOpusStream
 module.exports.writeStreamToWavFile = writeStreamToWavFile
 module.exports.convertWavFileToMp3File = convertWavFileToMp3File

@@ -91,7 +91,7 @@ function createRecognizer(callback) {
         resource: "resources/common.res",
         models: constructModels(),
         audioGain: 1.0,
-        applyFrontend: false
+        applyFrontend: true
     })
     // detector.on('silence', () => {});
     // detector.on('sound', buffer => {});

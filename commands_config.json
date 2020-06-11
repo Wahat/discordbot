@@ -218,6 +218,7 @@
     },
     "say": {
       "description": "Say something!",
+      "type": "voice",
       "args": [
         {
           "name": "message",

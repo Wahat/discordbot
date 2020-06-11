@@ -8,11 +8,11 @@ const commandConfig = require(`./commands_config.json`)
 class CommandHandler {
     /**
      *
-     * @param {DJ} dj
+     * @param {DJHandler} dj
      * @param {AudioHandler} audioHandler
      */
     constructor(dj, audioHandler) {
-        /** @member {DJ} **/
+        /** @member {DJHandler} **/
         this.dj = dj
         /** @member {AudioHandler} **/
         this.audioHandler = audioHandler
@@ -21,12 +21,12 @@ class CommandHandler {
         /** @member {EventEmitter | module:events.internal.EventEmitter} **/
         this.eventReceiver = new events.EventEmitter()
 
-        this.eventReceiver.on('playAudioAck', (context, mode, callback) => {
-            this.dj.playAudioAck(context, mode, callback)
+        this.eventReceiver.on('playHotwordAudioAck', (context, mode, callback) => {
+            this.dj.playHotwordAudioAck(context, mode, callback)
         })
 
-        this.eventReceiver.on('command', (context, msgContext) => {
-            this.onCommandReceived(context, msgContext)
+        this.eventReceiver.on('command', (msgContext) => {
+            this.onCommandReceived(msgContext)
         })
 
         this.eventReceiver.on('playAudioWavStream', (context, stream) => {
@@ -40,10 +40,9 @@ class CommandHandler {
 
     /**
      *
-     * @param {GuildContext} context
      * @param {MessageContext} msgContext
      */
-    onCommandReceived(context, msgContext) {
+    onCommandReceived(msgContext) {
         const yargs = require('yargs-parser')(msgContext.getMessage())
         let commandType = parseCommand(yargs['_'].shift().toLowerCase())
         if (commandConfig["commands"][commandType]) {
@@ -60,15 +59,14 @@ class CommandHandler {
                     ? yargs[commandArg["flag"]].join(' ') : yargs[commandArg["flag"]]
                 if (commandArg["required"] && !parsedArgs[commandArg["name"]]) {
                     this.textResponder.respond(msgContext,
-                        embedder.createErrorEmbed(`${commandType} requires ${commandArg["name"]} parameter (${commandArg["flag"]})`),
-                        "error")
+                        embedder.createBasicMessageEmbed(`${commandType} requires ${commandArg["name"]} parameter (${commandArg["flag"]})`))
                     failedArg = true
                     return
                 }
                 if (commandArg["integer"] && !isNumeric(parsedArgs[commandArg["name"]])) {
                     this.textResponder.respond(msgContext,
-                        embedder.createErrorEmbed(`${commandArg["name"]} parameter must be integer`),
-                        "error")
+                        embedder.createBasicMessageEmbed(`${commandArg["name"]} parameter must be integer`),
+                        'error')
                     failedArg = true
                 } else if (commandArg["integer"]) {
                     parsedArgs[commandArg["name"]] = parseInt(parsedArgs[commandArg["name"]])
@@ -95,8 +93,7 @@ class CommandHandler {
             if (invalidArg) {
                 return
             }
-            let commandContext = new ctx.VoiceConnectionMessageContext(msgContext, context.getVoiceConnection())
-            this[commandExec["handler"]][commandExec["name"]](commandContext, ...execArgs)
+            this[commandExec["handler"]][commandExec["name"]](msgContext, ...execArgs)
         }
     }
 }
@@ -115,8 +112,7 @@ function preParseSpecificArgumentsIfNeeded(textResponder, msgContext, arg, parse
             parsedArg = parseUser(msgContext, parsedArg)
             if (!parsedArg) {
                 textResponder.respond(msgContext,
-                    embedder.createErrorEmbed(`Invalid user provided (Display name / Nickname / Mention)`),
-                    "error")
+                    embedder.createBasicMessageEmbed(`Invalid user provided (Display name / Nickname / Mention)`))
                 throw('Invalid user provided')
             }
     }

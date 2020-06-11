@@ -5,129 +5,131 @@ const textResponder = require('./responder.js').TextResponder
 const voiceResponder = require('./responder.js').VoiceResponder
 const embedder = require('./embedder.js').Embedder
 
-class DJ {
+class DJHandler {
     siri_ack_start = './resources/siri_acknowledge.mp3'
     siri_ack_finish = './resources/siri_acknowledge_done.mp3'
 
     constructor() {
         /** @member {Map<string><Object>} **/
-        this.guildQueues = new Map()
+        this.guildDJs = new Map()
     }
 
     /**
      *
-     * @param {VoiceConnectionMessageContext} context
+     * @param {MessageContext} context
      * @returns {Object}
      */
-    getGuildQueue(context) {
+    getGuildDJ(context) {
         const guildId = context.getVoiceConnection().channel.guild.id
-        if (!this.guildQueues.has(guildId)) {
-            context.getVoiceConnection()
-            const queueObject = {
+        if (!this.guildDJs.has(guildId)) {
+            const dj = {
                 connection: context.getVoiceConnection(),
-                songs: [],
-                volume: 0.25,
-                isPlaying: true,
+                queue: [],
+                volume: context.getConfig()["volume"],
+                isPlaying: false,
             };
-            this.guildQueues.set(guildId, queueObject)
+            this.guildDJs.set(guildId, dj)
         }
         if (context.getVoiceConnection() &&
-            context.getVoiceConnection() !== this.guildQueues.get(guildId).connection) {
-            this.guildQueues.get(guildId).connection = context.getVoiceConnection()
+            context.getVoiceConnection() !== this.guildDJs.get(guildId).connection) {
+            this.guildDJs.get(guildId).connection = context.getVoiceConnection()
         }
-        return this.guildQueues.get(guildId)
+        return this.guildDJs.get(guildId)
     }
 
     /**
      *
-     * @param {VoiceConnectionMessageContext} context
+     * @param {MessageContext} context
      * @param {int} volume
      * @param relative
      */
     volume(context, volume, relative = false) {
-        const queue = this.getGuildQueue(context)
+        const dj = this.getGuildDJ(context)
         if (relative) {
-            const prevVolume = queue.volume * 100
+            const prevVolume = dj.volume * 100
             volume = prevVolume * (volume / 100)
         }
         const newVolume = volume / 100
-        if (queue.connection.dispatcher) {
-            queue.connection.dispatcher.setVolume(newVolume);
-            textResponder.react(context, '👌')
+        if (dj.connection.dispatcher) {
+            dj.connection.dispatcher.setVolume(newVolume);
         }
-        queue.volume = newVolume
-    }
-
-    /**
-     *
-     * @param {VoiceConnectionMessageContext} context
-     */
-    queue(context) {
-        const queue = this.getGuildQueue(context)
-        textResponder.respond(context, embedder.createQueueEmbed(queue.songs, null), 'queue')
-    }
-
-    /**
-     *
-     * @param {VoiceConnectionMessageContext} context
-     * @param index
-     */
-    song(context, index) {
-        const queue = this.guildQueues.get(context.getGuildId())
-        textResponder.respond(context, embedder.createSongDetailsEmbed(queue.songs, index), 'current')
-    }
-
-    /**
-     *
-     * @param {VoiceConnectionMessageContext} context
-     */
-    skip(context) {
-        const queue = this.getGuildQueue(context)
-        this.playNext(context, queue)
+        dj.volume = newVolume
         textResponder.react(context, '👌')
     }
 
     /**
      *
-     * @param {VoiceConnectionMessageContext} context
+     * @param {MessageContext} context
+     */
+    queue(context) {
+        const dj = this.getGuildDJ(context)
+        textResponder.respond(context, embedder.createQueueEmbed(dj.queue, null), 'queue')
+    }
+
+    /**
+     *
+     * @param {MessageContext} context
+     * @param index
+     */
+    song(context, index) {
+        const dj = this.getGuildDJ(context)
+        textResponder.respond(context, embedder.createSongDetailsEmbed(dj.queue, index), 'current')
+    }
+
+    /**
+     *
+     * @param {MessageContext} context
+     */
+    skip(context) {
+        const dj = this.getGuildDJ(context)
+            this.playNext(context)
+        if (!textResponder.react(context, '👌')) {
+            textResponder.respond(context, embedder.createBasicMessageEmbed('Skipping!'))
+        }
+    }
+
+    /**
+     *
+     * @param {MessageContext} context
      */
     stop(context) {
-        const queue = this.getGuildQueue(context)
-        queue.songs = [];
-
-        if (queue.connection.dispatcher) {
-            textResponder.react(context, '👌')
-            queue.connection.dispatcher.end();
+        const dj = this.getGuildDJ(context)
+        if (dj.connection.dispatcher) {
+            if (!textResponder.react(context, '👌')) {
+                textResponder.respond(context, embedder.createBasicMessageEmbed('Stopping!'))
+            }
+            dj.connection.dispatcher.end();
         }
+        this.guildDJs.delete(context.getGuild().id)
     }
 
     /**
      *
-     * @param {VoiceConnectionMessageContext} context
+     * @param {MessageContext} context
      */
     pause(context) {
-        const queue = this.getGuildQueue(context)
-        if (queue.connection.dispatcher == null) {
+        const dj = this.getGuildDJ(context)
+        if (!dj.connection.dispatcher) {
             return
         }
-        if (queue.connection.dispatcher) {
-            textResponder.react(context, '👌')
-            queue.connection.dispatcher.pause()
+        dj.connection.dispatcher.pause()
+        if (!textResponder.react(context, '👌')) {
+            textResponder.respond(context, embedder.createBasicMessageEmbed('Pausing!'))
         }
     }
 
     /**
      *
-     * @param {VoiceConnectionMessageContext} context
+     * @param {MessageContext} context
      */
     resume(context) {
-        const queue = this.getGuildQueue(context)
-        if (queue.connection.dispatcher == null) {
+        const dj = this.getGuildDJ(context)
+        if (!dj.connection.dispatcher) {
             return
         }
-        if (queue.connection.dispatcher) {
-            textResponder.react(context, '👌')
-            queue.connection.dispatcher.resume()
+        dj.connection.dispatcher.resume()
+        if (!textResponder.react(context, '👌')) {
+            textResponder.respond(context, embedder.createBasicMessageEmbed('Pausing!'))
         }
     }
 
@@ -137,11 +139,11 @@ class DJ {
 
     /**
      *
-     * @param {VoiceConnectionMessageContext} context
+     * @param {MessageContext} context
      * @param {int} mode - 0 for start, 1 for end
      * @param callback
      */
-    playAudioAck(context, mode, callback) {
+    playHotwordAudioAck(context, mode, callback) {
         const file = mode === 0 ? this.siri_ack_start : this.siri_ack_finish
         const hotwordAckStream = audioUtils.convertMp3FileToOpusStream(file)
         this.playAudioEvent(context, hotwordAckStream, 'opus', callback)
@@ -149,7 +151,7 @@ class DJ {
 
     /**
      *
-     * @param {VoiceConnectionMessageContext} context
+     * @param {MessageContext} context
      * @param stream
      */
     playAudioWavStream(context, stream) {
@@ -158,20 +160,23 @@ class DJ {
 
     /**
      * Interrupts current song to play an audio clip, then resumes song
-     * @param {VoiceConnectionMessageContext} context
-     * @param {ReadableStream} audioStream
+     * @param {MessageContext} context
+     * @param {ReadableStream | Readable} audioStream
      * @param {string} type
      * @param callback
      */
     playAudioEvent(context, audioStream, type, callback = () => {}) {
-        const currentSong = this.getGuildQueue(context).songs[0]
+        const currentSong = this.getGuildDJ(context).queue[0]
         if (currentSong && currentSong.stream) {
             currentSong.stream.unpipe()
             currentSong.stream.pause()
         }
-        this.getGuildQueue(context).connection.play(audioStream, {
-            type: type
-        }).on('finish', () => {
+        this.getGuildDJ(context).connection.play(audioStream, {
+            type: type,
+            volume: this.getGuildDJ(context).volume
+        }).once('finish', () => {
+            audioStream.destroy()
+            audioStream = undefined
             this.playSong(context, currentSong, true)
             callback()
         })
@@ -179,12 +184,11 @@ class DJ {
 
     /**
      *
-     * @param {VoiceConnectionMessageContext} context
+     * @param {MessageContext} context
      * @param {string} args
      * @returns {Promise<void>}
      */
     async play(context, args) {
-        // TODO refactor to not work only for youtube
         const url = await search.searchYoutube(args)
         textResponder.startTyping(context)
         const songInfo = await ytdl.getInfo(url);
@@ -198,33 +202,35 @@ class DJ {
             requesterId: context.getUser().id,
             stream: null
         }
-        const queue = this.getGuildQueue(context)
-        queue.songs.push(song)
-        if (queue.songs.length === 1) {
-            this.playSong(context, queue.songs[0])
+        const dj = this.getGuildDJ(context)
+        dj.queue.push(song)
+        if (dj.queue.length === 1) {
+            this.playSong(context, dj.queue[0])
         } else {
             textResponder.remove(context, 'queue')
-            textResponder.respond(context, embedder.createQueueEmbed(queue.songs, song), 'queue')
-            console.log(`${song.title} was added to the queue, new queue size ${queue.songs.length}`)
+            textResponder.respond(context, embedder.createQueueEmbed(dj.queue, song), 'queue')
+            console.log(`${song.title} was added to the queue, new queue size ${dj.queue.length}`)
         }
     }
 
     /**
      *
-     * @param {VoiceConnectionMessageContext} context
+     * @param {MessageContext} context
      * @param {Object} song
      * @param {boolean} resume
      * @returns {Promise<void>}
      */
     async playSong(context, song, resume = false) {
-        const queue = this.getGuildQueue(context)
+        const dj = this.getGuildDJ(context)
         if (!song || (resume && !song.stream)) {
-            if (queue.connection.dispatcher) {
-                queue.connection.dispatcher.end()
+            if (dj.connection.dispatcher) {
+                dj.connection.dispatcher.end()
             }
             return
         }
         if (!resume) {
+            textResponder.respond(context, embedder.createNowPlayingEmbed(song), 'play')
+            await voiceResponder.respond(this, context, `Playing ${song.title}`)
             song.stream = await ytdl(song.url, {
                 quality: 'highestaudio',
                 highWaterMark: 1024 * 1024 * 10,
@@ -233,30 +239,18 @@ class DJ {
             song.stream.resume()
         }
 
-        if (queue.connection.dispatcher) { // Clear listeners
-            queue.connection.dispatcher.removeAllListeners('start')
-            queue.connection.dispatcher.removeAllListeners('error')
-            queue.connection.dispatcher.removeAllListeners('finish')
-            queue.connection.dispatcher.end()
-        }
-        queue.connection
-            .play(song.stream, {
-                type: 'opus',
-                volume: queue.volume,
-                highWaterMark: 48
-            })
-            .on('start', () => {
-                if (!resume) {
-                    textResponder.respond(context, embedder.createNowPlayingEmbed(song), 'play')
-                    voiceResponder.respond(this, context, `Playing ${song.title}`)
-                }
-            })
-            .on('finish', () => {
-                textResponder.remove(context, 'play')
-                textResponder.remove(context, 'queue')
-                this.playNext(context, queue)
-            })
-            .on('error', error => console.error(error))
+        const dispatcher = dj.connection.play(song.stream, {
+            type: 'opus',
+            volume: dj.volume,
+            highWaterMark: 48
+        })
+        dispatcher.once('finish', () => {
+            textResponder.remove(context, 'play')
+            textResponder.remove(context, 'queue')
+            this.playNext(context)
+        })
+        dispatcher.once('error', error => console.error(error))
+
         if (song && !resume) {
             console.log(`Start playing: **${song.title}**`)
         }
@@ -264,13 +258,16 @@ class DJ {
 
     /**
      *
-     * @param {VoiceConnectionMessageContext} context
-     * @param {Object} queue
+     * @param {MessageContext} context
      */
-    playNext(context, queue) {
-        queue.songs.shift();
-        this.playSong(context, queue.songs[0]);
+    playNext(context) {
+        const dj = this.getGuildDJ(context)
+        const song = dj.queue.shift()
+        if (song) {
+            song.stream = null
+        }
+        this.playSong(context, dj.queue[0])
     }
 }
 
-module.exports.DJ = new DJ()
+module.exports.DJHandler = new DJHandler()
