@@ -30,8 +30,7 @@ class Recorder extends stream.Transform {
 
     _transform(chunk, encoding, callback) {
         if (!this.writing) {
-            console.log(`${chunk.length}`)
-            if (this.rollingBuffer.length > 500) {
+            if (this.rollingBuffer.length > 500) { // Chunk size ~3840
                 this.rollingBuffer.shift()
             }
             this.rollingBuffer.push(chunk)
