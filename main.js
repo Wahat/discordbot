@@ -16,8 +16,8 @@ client.on('invalidated', () => {
 })
 
 setInterval(() => {
-    console.log(`Memory Usage: ${process.memoryUsage().toString()}`)
-}, 10000);
+    console.log(`Memory heapTotal: ${process.memoryUsage().heapTotal / 1000000} Memory heapUsed: ${process.memoryUsage().heapUsed / 1000000}\nMemory external: ${process.memoryUsage().external / 1000000} Memory rss: ${process.memoryUsage().rss / 1000000}`)
+}, 15000);
 
 const audioHandler = new Audio.AudioHandler()
 const commandHandler = new Command.CommandHandler(DJ, audioHandler)

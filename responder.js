@@ -29,7 +29,9 @@ class TextResponder {
     }
 
     showMemoryUsage(context) {
-        this.respond(context, embedder.getBaseEmbed().setDescription(`Memory used ${process.memoryUsage().toString()}`))
+        this.respond(context, embedder.getBaseEmbed().setDescription(
+            `Memory heapTotal: ${process.memoryUsage().heapTotal / 1000000}\nMemory heapUsed: ${process.memoryUsage().heapUsed / 1000000}\nMemory external: ${process.memoryUsage().external / 1000000}\nMemory rss: ${process.memoryUsage().rss / 1000000}`)
+        )
     }
 
     /**

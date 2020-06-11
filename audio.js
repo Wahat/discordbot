@@ -29,7 +29,7 @@ class AudioHandler {
      * @returns {GuildAudioContext}
      */
     getGuildAudioContext(context) {
-        const guildId = context.getVoiceConnection().channel.guild.id
+        const guildId = context.getGuild().id
         if (!this.guilds.has(guildId)) {
             console.log(`Missing audio context for ${guildId}`)
             this.guilds.set(guildId, new ctx.GuildAudioContext())
