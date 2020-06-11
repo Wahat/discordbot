@@ -1,5 +1,5 @@
 const embedder = require('./embedder.js').Embedder
-const speechGenerator = require('./SpeechGeneration/say.js')
+const speechGenerator = require('./SpeechGeneration/microsoft.js')
 
 class TextResponder {
     constructor() {
@@ -50,16 +50,20 @@ class TextResponder {
      * @param {MessageEmbed} embed
      * @param {string} type
      * @param callback
+     * @return boolean
      */
-    respond(context, embed, type, callback=()=>{}) {
+    respond(context, embed, type='', callback=()=>{}) {
         const textChannel = context.getTextChannel()
         if (!textChannel) {
-            return
+            return false
         }
         textChannel.send(embed).then(msg => {
-            this.getGuildMessages(context).set(type, msg)
+            if (type) {
+                this.getGuildMessages(context).set(type, msg)
+            }
             callback(msg)
         })
+        return true
     }
 
     /**
@@ -125,16 +129,18 @@ class VoiceResponder {
 
     /**
      *
-     * @param {DJ} dj
-     * @param {VoiceConnectionMessageContext} context
+     * @param {DJHandler} dj
+     * @param {MessageContext} context
      * @param message
      * @param voice
-     * @param callback
+     * @return Promise<>
      */
-    respond(dj, context, message, voice='Samantha', callback=()=>{}) {
-        speechGenerator.generateSpeechFromText(message, voice, stream => {
-            dj.playAudioEvent(context, stream, 'opus', ()=>{
-                callback()
+    respond(dj, context, message, voice) {
+        return new Promise((res, rej) => {
+            speechGenerator.generateSpeechFromText(message, voice, stream => {
+                dj.playAudioEvent(context, stream, 'opus', () => {
+                    res()
+                })
             })
         })
     }

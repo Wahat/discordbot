@@ -14,7 +14,7 @@ class GuildHandler {
 
     /**
      *
-     * @param guildId
+     * @param {string} guildId
      * @returns {GuildContext | null}
      */
     getGuildContextFromId(guildId) {
@@ -101,7 +101,7 @@ class GuildHandler {
      * @param {onJoinedCallback} callback
      */
     registerJoinOnMessage(client, callback) {
-        client.on('message', msg => {
+        client.on('message', /** @type {Message} **/ msg => {
             if (msg.channel.type !== "text") {
                 if (msg.channel.type === "dm") {
                     dmHandler.onMessageReceived(client, msg)
@@ -124,7 +124,8 @@ class GuildHandler {
                 msg.channel.send('You need to be in a voice channel to play music!')
                 return
             }
-            const msgContext = new ctx.MessageContext(msg.member.user, msg.content.replace(prefix, '').replace(aliasedCommand, actualCommand), msg.channel, msg)
+            const msgContext = new ctx.MessageContext(msg.member.user,
+                msg.content.replace(prefix, '').replace(aliasedCommand, actualCommand), msg.channel, msg)
             if (commandConfig["commands"][actualCommand]["type"] !== 'voice') {
                 callback(this.getGuildContext(null, msg.channel), msgContext)
                 return
@@ -142,6 +143,9 @@ class GuildHandler {
      */
     joinVoiceChannel(voiceChannel, textChannel, callback, msgContext = null) {
         voiceChannel.join().then(connection => {
+            if (msgContext) {
+                msgContext.voiceConnection = connection
+            }
             callback(this.getGuildContext(connection, textChannel), msgContext)
         })
     }

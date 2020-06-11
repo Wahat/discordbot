@@ -1,41 +1,37 @@
 {
   "commands": {
     "register": {
+      "type": "process",
       "args": [],
       "stack": [
-        "_select_guild", "_select_type", "_set_new_key_value_pair", "acknowledgement"
+        "_select_guild", "_select_type", "_set_new_key", "_set_new_value"
       ]
     },
-    "_select_guild_request": {
+    "_select_guild": {
       "type": "request",
-      "message": "Which guild are you configuring?",
-      "args": [
-        "guilds"
-      ]
-    },
-    "_select_guild_response": {
-      "type": "response",
+      "prompt": "Which guild are you configuring?",
       "args": [
         "guild"
-      ]
+      ],
+      "validation": "guild"
     },
-    "_select_type_request": {
+    "_select_type": {
       "type": "request",
-      "message": "Which type are you configuring?",
-      "args": [
-        "types"
-      ]
-    },
-    "_select_type_response": {
-      "type": "response",
+      "prompt": "Which type are you configuring?",
       "args": [
         "type"
+      ],
+      "validation": "type"
+    },
+    "_set_new_key": {
+      "prompt": "Enter a key",
+      "args": [
+        "key"
       ]
     },
-    "_set_new_key_value_pair": {
-      "response": "Enter a key value pair",
+    "_set_new_value": {
+      "prompt": "Enter a value",
       "args": [
-        "key",
         "value"
       ]
     },
@@ -46,12 +42,14 @@
       ]
     },
     "guilds": {
+      "type": "Information",
       "response": "Guilds that you are an administrator of: \n%s",
       "response_args": [
         "guilds"
       ]
     },
     "members": {
+      "type": "Information",
       "response": "Members that are in %s: \n%s",
       "response_args": [
         "users"

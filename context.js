@@ -6,7 +6,6 @@ class GuildContext {
         this.voiceConnection = voiceConnection
         /** @member {TextChannel} **/
         this.textChannel = textChannel
-        this.config = configHandler.retrieveConfig(this.getGuildId())
     }
 
     /**
@@ -30,7 +29,7 @@ class GuildContext {
      * @returns {any}
      */
     getConfig() {
-        return this.config
+        return configHandler.retrieveConfig(this.getGuild().id)
     }
 
     /**
@@ -40,34 +39,21 @@ class GuildContext {
     getGuild() {
         return this.textChannel.guild ? this.textChannel.guild : this.voiceConnection.guild
     }
-
-    /**
-     *
-     * @returns {Snowflake}
-     */
-    getGuildId() {
-        return this.getGuild().id
-    }
 }
 
-class MessageContext {
-    constructor(user, message, textChannel, discordMessage=null) {
+class MessageContext extends GuildContext {
+    constructor(user, message, textChannel, discordMessage = null, voiceConnection = null) {
+        super(voiceConnection, textChannel)
         /** @member {User} **/
         this.user = user
         /** @member {string} **/
         this.message = message
-        /** @member {TextChannel} **/
-        this.textChannel = textChannel
         /** @member {Message | null} **/
         this.discordMessage = discordMessage
     }
 
-    /**
-     *
-     * @returns {Guild}
-     */
-    getGuild() {
-        return this.textChannel.guild
+    hasVoiceConnection() {
+        return this.voiceConnection != null
     }
 
     /**
@@ -92,14 +78,6 @@ class MessageContext {
      */
     getDiscordMessage() {
         return this.discordMessage
-    }
-
-    /**
-     *
-     * @returns {TextChannel}
-     */
-    getTextChannel() {
-        return this.textChannel
     }
 
     /**
@@ -129,30 +107,26 @@ class MessageContext {
     }
 }
 
-class VoiceConnectionMessageContext extends MessageContext {
-    constructor(messageContext, voiceConnection) {
-        super(messageContext.user, messageContext.message, messageContext.textChannel, messageContext.discordMessage);
-        this.voiceConnection = voiceConnection
+class GuildAudioContext {
+    constructor() {
+        /** @member {Map<String, Recorder>} **/
+        this.audioStreams = new Map()
     }
 
     /**
      *
-     * @returns {VoiceConnection}
+     * @param {string} id
+     * @returns {boolean}
      */
-    getVoiceConnection() {
-        return this.voiceConnection
-    }
-}
-
-class GuildAudioContext {
-    constructor() {
-        this.audioStreams = new Map()
-    }
-
     hasAudioStream(id) {
         return this.audioStreams.has(id)
     }
 
+    /**
+     *
+     * @param {string} id
+     * @param {Recorder} audioStream
+     */
     setAudioStream(id, audioStream) {
         this.audioStreams.set(id, audioStream)
     }
@@ -177,5 +151,4 @@ class GuildAudioContext {
 
 module.exports.GuildContext = GuildContext
 module.exports.MessageContext = MessageContext
-module.exports.VoiceConnectionMessageContext = VoiceConnectionMessageContext
 module.exports.GuildAudioContext = GuildAudioContext

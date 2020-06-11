@@ -115,6 +115,7 @@ dist
 .yarn/install-state.gz
 .pnp.*
 
+snapshots/
 .DS_Store
 .idea/
 logs/

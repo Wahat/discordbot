@@ -7,7 +7,7 @@ const recorder = require('./recorder.js')
 const embedder = require('./embedder.js').Embedder
 const fs = require('fs')
 const textResponder = require('./responder.js').TextResponder
-const Guild = require('./guild.js').GuildHandler
+const guild = require('./guild.js').GuildHandler
 
 class AudioHandler {
     constructor() {
@@ -18,14 +18,14 @@ class AudioHandler {
         /** @member {boolean} **/
         this.isListeningToCommand = false
         /** @member {EventEmitter | module:events.internal.EventEmitter} **/
-        this.guildsEventReceiver = null
+        this.guildsEventReceiver = undefined
         /** @member {EventEmitter | module:events.internal.EventEmitter} **/
-        this.commandsEventEmitter = null
+        this.commandsEventEmitter = undefined
     }
 
     /**
      *
-     * @param {GuildContext | VoiceConnectionMessageContext} context
+     * @param {GuildContext | MessageContext} context
      * @returns {GuildAudioContext}
      */
     getGuildAudioContext(context) {
@@ -44,7 +44,7 @@ class AudioHandler {
     resetGuild(context) {
         this.getGuildAudioContext(context).clearAudioStreams()
         snowboy.clearDetectors()
-        this.guilds.delete(context.getGuildId())
+        this.guilds.delete(context.getGuild().id)
     }
 
     /**
@@ -62,7 +62,7 @@ class AudioHandler {
     registerGuildsEventReceiver(eventReceiver) {
         this.guildsEventReceiver = eventReceiver
         this.guildsEventReceiver.on('userLeftChannel', (guildId, userId) => {
-            const context = Guild.getGuildContextFromId(guildId)
+            const context = guild.getGuildContextFromId(guildId)
             if (!context) {
                 return
             }
@@ -80,11 +80,11 @@ class AudioHandler {
      */
     registerConnection(context) {
         const connection = context.getVoiceConnection()
-        if (this.guilds.has(context.getGuildId()) || !connection) {
+        if (this.guilds.has(context.getGuild().id) || !connection) {
             return
         }
         audioUtils.playSilentAudioStream(connection)
-        this.getGuildAudioContext(context)
+        this.getGuildAudioContext(context) // Create the audio context
         connection.on('speaking', (user, speaking) => {
             if (user === undefined) {
                 console.log("User is undefined")
@@ -93,11 +93,10 @@ class AudioHandler {
             if (this.getGuildAudioContext(context).hasAudioStream(user.id) || user.bot) {
                 return
             }
-            // Might not be needed
             if (this.recentlyRemoved.has(user.id)) {
                 console.log(`time difference ${Date.now() - this.recentlyRemoved.get(user.id)}`)
             }
-            if (this.recentlyRemoved.has(user.id) && (Date.now() - this.recentlyRemoved.get(user.id)) < 10) {
+            if (this.recentlyRemoved.has(user.id) && (Date.now() - this.recentlyRemoved.get(user.id)) < 300) {
                 this.recentlyRemoved.delete(user.id)
                 return
             }
@@ -151,18 +150,18 @@ class AudioHandler {
                 return
             }
             this.isListeningToCommand = true
-            this.commandsEventEmitter.emit('playAudioAck', context, 0)
+            this.commandsEventEmitter.emit('playHotwordAudioAck', context, 0)
             const recognitionStream = new stream.PassThrough()
             recorderStream.pipe(recognitionStream)
             speechEngine.runSpeechRecognition(recognitionStream, user.tag, data => {
                 console.log(`${user.tag} said ${data}`)
-                this.commandsEventEmitter.emit('command', context, new ctx.MessageContext(user, data.toString(),
-                    context.getTextChannel()))
+                this.commandsEventEmitter.emit('command', new ctx.MessageContext(user, data.toString(),
+                    context.getTextChannel(), null, connection))
+                recognitionStream.end()
+                recognitionStream.destroy()
             })
             setTimeout(() => {
-                this.commandsEventEmitter.emit('playAudioAck', context, 1, () => {
-                    recognitionStream.end()
-                })
+                this.commandsEventEmitter.emit('playHotwordAudioAck', context, 1)
                 this.isListeningToCommand = false
             }, 3000)
         })
@@ -170,7 +169,7 @@ class AudioHandler {
 
     /**
      *
-     * @param {VoiceConnectionMessageContext} context
+     * @param {MessageContext} context
      * @param {User} user
      * @param {string} caption
      * @param length
@@ -200,7 +199,7 @@ class AudioHandler {
 
     /**
      *
-     * @param {VoiceConnectionMessageContext} context
+     * @param {MessageContext} context
      * @param {User} user
      * @param length
      */
