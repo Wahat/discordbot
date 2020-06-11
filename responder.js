@@ -29,7 +29,7 @@ class TextResponder {
     }
 
     showMemoryUsage(context) {
-        this.respond(context, embedder.getBaseEmbed().setDescription(`Memory used ${process.memoryUsage()}`))
+        this.respond(context, embedder.getBaseEmbed().setDescription(`Memory used ${process.memoryUsage().toString()}`))
     }
 
     /**

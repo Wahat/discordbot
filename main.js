@@ -16,7 +16,7 @@ client.on('invalidated', () => {
 })
 
 setInterval(() => {
-    console.log(`Memory Usage: ${process.memoryUsage()}`)
+    console.log(`Memory Usage: ${process.memoryUsage().toString()}`)
 }, 10000);
 
 const audioHandler = new Audio.AudioHandler()
