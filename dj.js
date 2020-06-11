@@ -168,8 +168,8 @@ class DJHandler {
     playAudioEvent(context, audioStream, type, callback = () => {}) {
         const currentSong = this.getGuildDJ(context).queue[0]
         if (currentSong && currentSong.stream) {
-            currentSong.stream.unpipe()
             currentSong.stream.pause()
+            currentSong.stream.unpipe()
         }
         this.getGuildDJ(context).connection.play(audioStream, {
             type: type,
@@ -239,6 +239,9 @@ class DJHandler {
             song.stream.resume()
         }
 
+        if (dj.connection.dispatcher) {
+            dj.connection.dispatcher.end()
+        }
         const dispatcher = dj.connection.play(song.stream, {
             type: 'opus',
             volume: dj.volume,
@@ -264,7 +267,8 @@ class DJHandler {
         const dj = this.getGuildDJ(context)
         const song = dj.queue.shift()
         if (song) {
-            song.stream = null
+            song.stream.destroy()
+            song.stream = undefined
         }
         this.playSong(context, dj.queue[0])
     }
