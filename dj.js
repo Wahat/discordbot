@@ -175,6 +175,8 @@ class DJHandler {
             type: type,
             volume: this.getGuildDJ(context).volume
         }).once('finish', () => {
+            audioStream.destroy()
+            audioStream = undefined
             this.playSong(context, currentSong, true)
             callback()
         })
@@ -260,8 +262,11 @@ class DJHandler {
      */
     playNext(context) {
         const dj = this.getGuildDJ(context)
-        dj.queue.shift();
-        this.playSong(context, dj.queue[0]);
+        const song = dj.queue.shift()
+        if (song) {
+            song.stream = null
+        }
+        this.playSong(context, dj.queue[0])
     }
 }
 

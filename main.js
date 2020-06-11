@@ -7,17 +7,8 @@ const keys = require('./keys.js').Key
 
 const client = new Discord.Client()
 
-client.on('ready', () => {
-    console.log(`Logged in as ${client.user.tag}!`)
-    client.guilds.cache.forEach(guild => {
-        guild.channels.cache.forEach(channel => {
-            //console.log(`${channel.name} = ${channel.id}`)
-        })
-    })
-});
-
 client.login(keys.get("discord_token")).then(result => {
-    //console.log(result)
+    console.log(`Logged in!`)
 });
 
 client.on('invalidated', () => {

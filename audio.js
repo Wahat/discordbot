@@ -18,9 +18,9 @@ class AudioHandler {
         /** @member {boolean} **/
         this.isListeningToCommand = false
         /** @member {EventEmitter | module:events.internal.EventEmitter} **/
-        this.guildsEventReceiver = null
+        this.guildsEventReceiver = undefined
         /** @member {EventEmitter | module:events.internal.EventEmitter} **/
-        this.commandsEventEmitter = null
+        this.commandsEventEmitter = undefined
     }
 
     /**
@@ -84,7 +84,7 @@ class AudioHandler {
             return
         }
         audioUtils.playSilentAudioStream(connection)
-        this.getGuildAudioContext(context)
+        this.getGuildAudioContext(context) // Create the audio context
         connection.on('speaking', (user, speaking) => {
             if (user === undefined) {
                 console.log("User is undefined")
@@ -93,7 +93,6 @@ class AudioHandler {
             if (this.getGuildAudioContext(context).hasAudioStream(user.id) || user.bot) {
                 return
             }
-            // Might not be needed
             if (this.recentlyRemoved.has(user.id)) {
                 console.log(`time difference ${Date.now() - this.recentlyRemoved.get(user.id)}`)
             }
@@ -158,11 +157,11 @@ class AudioHandler {
                 console.log(`${user.tag} said ${data}`)
                 this.commandsEventEmitter.emit('command', new ctx.MessageContext(user, data.toString(),
                     context.getTextChannel(), null, connection))
+                recognitionStream.end()
+                recognitionStream.destroy()
             })
             setTimeout(() => {
-                this.commandsEventEmitter.emit('playHotwordAudioAck', context, 1, () => {
-                    recognitionStream.end()
-                })
+                this.commandsEventEmitter.emit('playHotwordAudioAck', context, 1)
                 this.isListeningToCommand = false
             }, 3000)
         })
