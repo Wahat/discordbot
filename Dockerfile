@@ -26,4 +26,4 @@ RUN pip install SpeechRecognition
 RUN mkdir -p configs
 RUN mkdir -p clips
 
-CMD ["node", "--max-old-space-size=768 main.js"]
+CMD ["node", "--max_old_space_size=768", "main.js"]
