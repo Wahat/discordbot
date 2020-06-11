@@ -120,6 +120,7 @@ dist
 logs/
 clips/
 configs/
+snapshots/
 
 SpeechRecognition/PythonSpeechRecognition/venv
 keys.json
