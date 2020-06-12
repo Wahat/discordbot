@@ -13,11 +13,7 @@ class Keys {
      * @returns {string}
      */
     get(key) {
-        if (this.keys.has(key)) {
-            return this.keys.get(key)
-        } else {
-            return process.env[key]
-        }
+        return (this.keys.has(key)) ? this.keys.get(key) : process.env[key]
     }
 
     loadKeysFromJson() {

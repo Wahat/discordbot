@@ -1,6 +1,5 @@
 const Detector = require('./snowboy/').Detector;
 const Models = require('./snowboy/').Models;
-const SampleRate = require('node-libsamplerate');
 const audioUtils = require('./audio_utils.js')
 
 class Snowboy {
@@ -60,8 +59,8 @@ class Snowboy {
             return
         }
         const detector = createRecognizer(callback)
-        const DownSampler = new SampleRate({type: 1, channels: 1, fromRate: 48000, fromDepth: 16, toRate: 16000, toDepth: 16})
-        input.pipe(audioUtils.createStereoToMonoTransformStream()).pipe(DownSampler).pipe(detector)
+        input.pipe(audioUtils.createStereoToMonoTransformStream())
+            .pipe(audioUtils.createDownSampleTransformStream()).pipe(detector)
         detectors.set(userId, detector);
     }
 }

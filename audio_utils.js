@@ -36,8 +36,9 @@ function createSilenceStream() {
  */
 function createStereoToMonoTransformStream() {
     const stereoToMonoTransformer = new stream.Transform({objectMode: true})
-    stereoToMonoTransformer._transform = function (chunk, encoding, done) {
+    stereoToMonoTransformer._transform = function(chunk, encoding, done) {
         this.push(convertStereoToMono(chunk))
+        chunk = null
         done()
     }
     return stereoToMonoTransformer
@@ -60,6 +61,18 @@ function convertStereoToMono(buffer) {
         newBuffer[i * 2 + LO] = (avg & 0xff)
     }
     return newBuffer
+}
+
+function createDownSampleTransformStream() {
+    const downSampleTransformer = new stream.Transform()
+    downSampleTransformer._transform = function(chunk, encoding, done) {
+        this.push(chunk)
+        chunk = null
+        done()
+    }
+    const downsamplingstream = require('./downsamplingstream.js')
+    //return new SampleRate({type: 1, channels: 1, fromRate: 48000, fromDepth: 16, toRate: 16000, toDepth: 16})
+    return new downsamplingstream({sourceSampleRate: 48000, downsample: true, writableObjectMode: false})
 }
 
 
@@ -153,6 +166,7 @@ function convertWavFileToMp3File(inputPath, outputPath, callback) {
 
 module.exports.playSilentAudioStream = playSilentAudioStream
 module.exports.createStereoToMonoTransformStream = createStereoToMonoTransformStream
+module.exports.createDownSampleTransformStream = createDownSampleTransformStream
 module.exports.writeStreamToMp3File = writeStreamToMp3File
 module.exports.convertMp3FileToOpusStream = convertMp3FileToOpusStream
 module.exports.convertMp3StreamToOpusStream = convertMp3StreamToOpusStream
