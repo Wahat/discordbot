@@ -2,13 +2,14 @@ const keys = require('../keys.js').Key
 const required_config_vars = ['google_project_id', 'google_keyFileName']
 const audioUtils = require('../audio_utils.js')
 
-let google = undefined
+let google
 
 /**
  *
  * @type {SpeechClient}
  */
-let client = undefined
+let client
+
 function runSpeechRecognition(audioStream, callback) {
     if (!google || !client) {
         google = require('@google-cloud/speech')

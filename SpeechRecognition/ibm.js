@@ -1,8 +1,8 @@
 const keys = require('../keys.js').Key
 const required_config_vars = ['watson_token', 'watson_url']
 
-let SpeechToText = undefined
-let auth = undefined
+let SpeechToText
+let auth
 /**
  *
  * @type {SpeechToTextV1}

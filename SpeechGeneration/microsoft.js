@@ -3,7 +3,7 @@ const required_config_vars = ['microsoft_token', 'microsoft_location']
 const stream = require('stream')
 const audioUtils = require('../audio_utils.js')
 
-let speechToText = undefined
+let speechToText
 
 /**
  * https://docs.microsoft.com/en-us/azure/cognitive-services/speech-service/language-support#standard-voices

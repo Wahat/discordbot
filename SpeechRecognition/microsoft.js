@@ -1,7 +1,7 @@
 const keys = require('../keys.js').Key
 const required_config_vars = ['microsoft_token', 'microsoft_location']
 
-let speechToText = undefined
+let speechToText
 
 function runSpeechRecognition(audioStream, callback) {
     if (!speechToText) {
