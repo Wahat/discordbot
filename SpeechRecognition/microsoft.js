@@ -1,9 +1,12 @@
-const speechToText = require('microsoft-cognitiveservices-speech-sdk')
 const keys = require('../keys.js').Key
-
 const required_config_vars = ['microsoft_token', 'microsoft_location']
 
+let speechToText = undefined
+
 function runSpeechRecognition(audioStream, callback) {
+    if (!speechToText) {
+        speechToText = require('microsoft-cognitiveservices-speech-sdk')
+    }
     const pushStream = speechToText.AudioInputStream.createPushStream(speechToText.AudioStreamFormat.getWaveFormatPCM(48000, 16, 2));
     audioStream.on('data', arrayBuffer => {
         pushStream.write(arrayBuffer.buffer)

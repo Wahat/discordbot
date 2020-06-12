@@ -1,9 +1,8 @@
-const SpeechToText = require('ibm-watson/speech-to-text/v1');
-const auth = require('ibm-watson/auth')
 const keys = require('../keys.js').Key
-
 const required_config_vars = ['watson_token', 'watson_url']
 
+let SpeechToText = undefined
+let auth = undefined
 /**
  *
  * @type {SpeechToTextV1}
@@ -11,7 +10,9 @@ const required_config_vars = ['watson_token', 'watson_url']
 let speechToText = undefined
 
 function runSpeechRecognition(audioStream, callback) {
-    if (!speechToText) {
+    if (!SpeechToText || !speechToText) {
+        SpeechToText = require('ibm-watson/speech-to-text/v1');
+        auth = require('ibm-watson/auth')
         speechToText = new SpeechToText({
             authenticator: new auth.IamAuthenticator({
                 apikey: keys.get(required_config_vars[0])
