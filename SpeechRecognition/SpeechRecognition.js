@@ -10,7 +10,6 @@ class SpeechRecognition {
     /**
      *
      * @param audioStream
-     * @param userTag
      * @param callback
      * @returns {boolean}
      */

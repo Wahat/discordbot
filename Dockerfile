@@ -1,8 +1,6 @@
 FROM node:12-buster
 WORKDIR /home/node
 
-RUN git clone -b master https://github.com/henrymxu/discordbot.git discordbot
-
 RUN apt-get update && apt-get install -y \
   git \
   cmake \
@@ -14,13 +12,15 @@ RUN apt-get update && apt-get install -y \
   libatlas-base-dev \
   python-pip
 
-WORKDIR /home/node/discordbot
-run npm install
-RUN chmod +x setup.sh
-RUN ./setup.sh
-
 # Python voice recognition
 RUN pip install SpeechRecognition
+
+RUN git clone -b master https://github.com/henrymxu/discordbot.git discordbot
+WORKDIR /home/node/discordbot
+run npm install
+
+RUN chmod +x setup.sh
+RUN ./setup.sh
 
 # Other
 RUN mkdir -p configs
