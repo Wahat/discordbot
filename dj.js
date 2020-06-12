@@ -98,7 +98,7 @@ class DJHandler {
             if (!textResponder.react(context, '👌')) {
                 textResponder.respond(context, embedder.createBasicMessageEmbed('Stopping!'))
             }
-            dj.connection.dispatcher.end();
+            dj.connection.dispatcher.destroy();
         }
         this.guildDJs.delete(context.getGuild().id)
     }
@@ -224,7 +224,7 @@ class DJHandler {
         const dj = this.getGuildDJ(context)
         if (!song || (resume && !song.stream)) {
             if (dj.connection.dispatcher) {
-                dj.connection.dispatcher.end()
+                dj.connection.dispatcher.destroy()
             }
             return
         }
@@ -240,7 +240,7 @@ class DJHandler {
         }
 
         if (dj.connection.dispatcher) {
-            dj.connection.dispatcher.end()
+            dj.connection.dispatcher.destroy()
         }
         const dispatcher = dj.connection.play(song.stream, {
             type: 'opus',
@@ -255,7 +255,7 @@ class DJHandler {
         dispatcher.once('error', error => console.error(error))
 
         if (song && !resume) {
-            console.log(`Start playing: **${song.title}**`)
+            console.log(`Now Playing: ${song.title}`)
         }
     }
 

@@ -1,4 +1,4 @@
-const speechEngine = require('./SpeechRecognition/microsoft.js')
+const speechRecognizer = require('./SpeechRecognition/SpeechRecognition.js').SpeechRecognition
 const snowboy = require('./snowboy.js').Snowboy
 const stream = require('stream')
 const audioUtils = require('./audio_utils.js')
@@ -153,7 +153,7 @@ class AudioHandler {
             this.commandsEventEmitter.emit('playHotwordAudioAck', context, 0)
             const recognitionStream = new stream.PassThrough()
             recorderStream.pipe(recognitionStream)
-            speechEngine.runSpeechRecognition(recognitionStream, user.tag, data => {
+            speechRecognizer.runSpeechRecognition(recognitionStream, data => {
                 console.log(`${user.tag} said ${data}`)
                 this.commandsEventEmitter.emit('command', new ctx.MessageContext(user, data.toString(),
                     context.getTextChannel(), null, connection))

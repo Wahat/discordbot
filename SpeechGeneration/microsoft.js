@@ -3,6 +3,8 @@ const keys = require('../keys.js').Key
 const stream = require('stream')
 const audioUtils = require('../audio_utils.js')
 
+const required_config_vars = ['microsoft_token', 'microsoft_location']
+
 /**
  * https://docs.microsoft.com/en-us/azure/cognitive-services/speech-service/language-support#standard-voices
  * @param message
@@ -10,7 +12,8 @@ const audioUtils = require('../audio_utils.js')
  * @param callback
  */
 function generateSpeechFromText(message, voice = "en-CA-Linda", callback) {
-    const speechConfig = speechToText.SpeechConfig.fromSubscription(keys.get("microsoft_token_1"), keys.get("microsoft_location"))
+    const speechConfig = speechToText.SpeechConfig.fromSubscription(keys.get(required_config_vars[0]),
+        keys.get(required_config_vars[1]))
     speechConfig.speechRecognitionLanguage = "en-US"
 
     let synthesizer = new speechToText.SpeechSynthesizer(speechConfig)

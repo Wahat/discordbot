@@ -1,5 +1,5 @@
 const embedder = require('./embedder.js').Embedder
-const speechGenerator = require('./SpeechGeneration/microsoft.js')
+const speechGenerator = require('./SpeechGeneration/SpeechGeneration.js').SpeechGeneration
 
 class TextResponder {
     constructor() {

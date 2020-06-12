@@ -12,7 +12,7 @@ class Embedder {
 
     /**
      *
-     * @param {string} song
+     * @param {Object} song
      * @returns {MessageEmbed}
      */
     createNowPlayingEmbed(song) {

@@ -4,6 +4,8 @@ const fileUtils = require('../file_utils.js')
 
 const spawn = require('child_process')
 
+const required_config_vars = []
+
 /**
  * List of mac voices https://gist.github.com/mculp/4b95752e25c456d425c6
  * @param {string} message

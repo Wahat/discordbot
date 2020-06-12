@@ -1,6 +1,8 @@
 const spawn = require("child_process").spawn
 const audioUtils = require('../audio_utils.js')
 
+const required_config_vars = []
+
 /**
  * Callback for receiving results from voice recognition
  *
@@ -11,11 +13,11 @@ const audioUtils = require('../audio_utils.js')
 /**
  *
  * @param {ReadableStream} audioStream
- * @param {string} userTag
  * @param {onVoiceParsedCallback} callback
  */
-function runSpeechRecognition(audioStream, userTag, callback) {
-    const outputFile = `./clips/${userTag}.wav`
+function runSpeechRecognition(audioStream, callback) {
+    const stamp = Date.now().toString()
+    const outputFile = `./clips/${stamp}.wav`
     audioUtils.writeStreamToWavFile(audioStream, outputFile)
     audioStream.on('end', () => {
         console.time('pythonRecognition')

@@ -16,7 +16,7 @@ client.on('invalidated', () => {
 })
 
 setInterval(() => {
-    console.log(`Memory heapTotal: ${process.memoryUsage().heapTotal / 1000000} Memory heapUsed: ${process.memoryUsage().heapUsed / 1000000}\nMemory external: ${process.memoryUsage().external / 1000000} Memory rss: ${process.memoryUsage().rss / 1000000}`)
+    console.log(`HeapTotal: ${process.memoryUsage().heapTotal / 1000000} HeapUsed: ${process.memoryUsage().heapUsed / 1000000} External: ${process.memoryUsage().external / 1000000} RSS: ${process.memoryUsage().rss / 1000000}`)
 }, 30000);
 
 const audioHandler = new Audio.AudioHandler()

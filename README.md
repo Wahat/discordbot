@@ -23,9 +23,7 @@
 `watson_url` - 
 
 #### Microsoft Azure
-`microsoft_token_1` - 
-
-`microsoft_token_2` - 
+`microsoft_token` - 
 
 `microsoft_location` - 
 
