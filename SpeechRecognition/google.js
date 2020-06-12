@@ -4,8 +4,15 @@ const audioUtils = require('../audio_utils.js')
 
 const required_config_vars = ['google_project_id', 'google_keyFileName']
 
-const client = new google.SpeechClient({'projectId': keys.get(required_config_vars[0]), 'keyFileName': keys.get(required_config_vars[1])});
+/**
+ *
+ * @type {SpeechClient}
+ */
+let client = undefined
 function runSpeechRecognition(audioStream, callback) {
+    if (!client) {
+        client = new google.SpeechClient({'projectId': keys.get(required_config_vars[0]), 'keyFileName': keys.get(required_config_vars[1])});
+    }
     const request = {
         config: {
             encoding: 'LINEAR16',
