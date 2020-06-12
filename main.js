@@ -1,32 +1,32 @@
-const Discord = require('discord.js')
-const Guild = require('./guild.js').GuildHandler
-const Audio = require('./audio.js')
-const Command = require('./command.js')
-const DJ = require('./dj.js').DJHandler
-const keys = require('./keys.js').Key
+constDiscord=require('discord.js')
+constGuild=require('./guild.js').GuildHandler
+constAudio=require('./audio.js')
+constCommand=require('./command.js')
+constDJ=require('./dj.js').DJHandler
+constkeys=require('./keys.js').Key
 
-const client = new Discord.Client()
+constclient=newDiscord.Client()
 
-client.login(keys.get("discord_token")).then(result => {
-    console.log(`Logged in!`)
+client.login(keys.get("discord_token")).then(result=>{
+console.log(`Loggedin!`)
 });
 
-client.on('invalidated', () => {
-    console.log('Session invalidated')
+client.on('invalidated',()=>{
+console.log('Sessioninvalidated')
 })
 
-setInterval(() => {
-    console.log(`HeapTotal: ${process.memoryUsage().heapTotal / 1000000} HeapUsed: ${process.memoryUsage().heapUsed / 1000000} External: ${process.memoryUsage().external / 1000000} RSS: ${process.memoryUsage().rss / 1000000}`)
-}, 30000);
+setInterval(()=>{
+console.log(`HeapTotal:${process.memoryUsage().heapTotal/1000000}HeapUsed:${process.memoryUsage().heapUsed/1000000}External:${process.memoryUsage().external/1000000}RSS:${process.memoryUsage().rss/1000000}`)
+},30000);
 
-const audioHandler = new Audio.AudioHandler()
-const commandHandler = new Command.CommandHandler(DJ, audioHandler)
+constaudioHandler=newAudio.AudioHandler()
+constcommandHandler=newCommand.CommandHandler(DJ,audioHandler)
 audioHandler.registerCommandsEventEmitter(commandHandler.eventReceiver)
 audioHandler.registerGuildsEventReceiver(Guild.eventEmitter)
 
-Guild.registerWhenToJoinListener(client, (context, msgContext) => {
-    audioHandler.registerConnection(context)
-    if (msgContext != null) {
-        commandHandler.eventReceiver.emit('command', msgContext)
-    }
+Guild.registerWhenToJoinListener(client,(context,msgContext)=>{
+audioHandler.registerConnection(context)
+if(msgContext!=null){
+commandHandler.eventReceiver.emit('command',msgContext)
+}
 })

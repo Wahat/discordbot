@@ -1,30 +1,30 @@
-FROM node:12-buster
-WORKDIR /home/node
+FROMnode:12-buster
+WORKDIR/home/node
 
-RUN apt-get update && apt-get install -y \
-  git \
-  cmake \
-  lame \
-  libasound-dev \
-  espeak \
-  ffmpeg \
-  libmagic-dev \
-  libatlas-base-dev \
-  python-pip
+RUNapt-getupdate&&apt-getinstall-y\
+git\
+cmake\
+lame\
+libasound-dev\
+espeak\
+ffmpeg\
+libmagic-dev\
+libatlas-base-dev\
+python-pip
 
-# Python voice recognition
-RUN pip install SpeechRecognition
+#Pythonvoicerecognition
+RUNpipinstallSpeechRecognition
 
-RUN git clone -b master https://github.com/henrymxu/discordbot.git discordbot
-WORKDIR /home/node/discordbot
-run npm install
+RUNgitclone-bmasterhttps://github.com/henrymxu/discordbot.gitdiscordbot
+WORKDIR/home/node/discordbot
+runnpminstall
 
-RUN chmod +x setup.sh
-RUN ./setup.sh
+RUNchmod+xsetup.sh
+RUN./setup.sh
 
-# Other
-RUN mkdir -p configs
-RUN mkdir -p clips
+#Other
+RUNmkdir-pconfigs
+RUNmkdir-pclips
 
 #"--max_old_space_size=768"
-CMD ["node", "main.js"]
+CMD["node","main.js"]

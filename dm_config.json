@@ -1,59 +1,59 @@
 {
-  "commands": {
-    "register": {
-      "type": "process",
-      "args": [],
-      "stack": [
-        "_select_guild", "_select_type", "_set_new_key", "_set_new_value"
-      ]
-    },
-    "_select_guild": {
-      "type": "request",
-      "prompt": "Which guild are you configuring?",
-      "args": [
-        "guild"
-      ],
-      "validation": "guild"
-    },
-    "_select_type": {
-      "type": "request",
-      "prompt": "Which type are you configuring?",
-      "args": [
-        "type"
-      ],
-      "validation": "type"
-    },
-    "_set_new_key": {
-      "prompt": "Enter a key",
-      "args": [
-        "key"
-      ]
-    },
-    "_set_new_value": {
-      "prompt": "Enter a value",
-      "args": [
-        "value"
-      ]
-    },
-    "acknowledgement": {
-      "response": "",
-      "args": [
+"commands":{
+"register":{
+"type":"process",
+"args":[],
+"stack":[
+"_select_guild","_select_type","_set_new_key","_set_new_value"
+]
+},
+"_select_guild":{
+"type":"request",
+"prompt":"Whichguildareyouconfiguring?",
+"args":[
+"guild"
+],
+"validation":"guild"
+},
+"_select_type":{
+"type":"request",
+"prompt":"Whichtypeareyouconfiguring?",
+"args":[
+"type"
+],
+"validation":"type"
+},
+"_set_new_key":{
+"prompt":"Enterakey",
+"args":[
+"key"
+]
+},
+"_set_new_value":{
+"prompt":"Enteravalue",
+"args":[
+"value"
+]
+},
+"acknowledgement":{
+"response":"",
+"args":[
 
-      ]
-    },
-    "guilds": {
-      "type": "Information",
-      "response": "Guilds that you are an administrator of: \n%s",
-      "response_args": [
-        "guilds"
-      ]
-    },
-    "members": {
-      "type": "Information",
-      "response": "Members that are in %s: \n%s",
-      "response_args": [
-        "users"
-      ]
-    }
-  }
+]
+},
+"guilds":{
+"type":"Information",
+"response":"Guildsthatyouareanadministratorof:\n%s",
+"response_args":[
+"guilds"
+]
+},
+"members":{
+"type":"Information",
+"response":"Membersthatarein%s:\n%s",
+"response_args":[
+"users"
+]
+}
+}
 }

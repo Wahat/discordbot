@@ -1,30 +1,30 @@
-const fs = require('fs')
+constfs=require('fs')
 
 
-function openJsonFile(filePath) {
-    if (!fs.existsSync(filePath)) {
-        return {}
-    }
-    let rawdata = fs.readFileSync(filePath);
-    return JSON.parse(rawdata)
+functionopenJsonFile(filePath){
+if(!fs.existsSync(filePath)){
+return{}
+}
+letrawdata=fs.readFileSync(filePath);
+returnJSON.parse(rawdata)
 }
 /**
- *
- * @param {string} filePath
- * @param {boolean} sync
- * @param callback
- */
-function deleteFile(filePath, sync=true, callback=()=>{}) {
-    if (sync) {
-        if (fs.existsSync(filePath)) {
-            fs.unlinkSync(filePath)
-        }
-    } else {
-        if (fs.existsSync(filePath)) {
-            fs.unlink(filePath, callback)
-        }
-    }
+*
+*@param{string}filePath
+*@param{boolean}sync
+*@paramcallback
+*/
+functiondeleteFile(filePath,sync=true,callback=()=>{}){
+if(sync){
+if(fs.existsSync(filePath)){
+fs.unlinkSync(filePath)
+}
+}else{
+if(fs.existsSync(filePath)){
+fs.unlink(filePath,callback)
+}
+}
 }
 
-module.exports.deleteFile = deleteFile
-module.exports.openJsonFile = openJsonFile
+module.exports.deleteFile=deleteFile
+module.exports.openJsonFile=openJsonFile

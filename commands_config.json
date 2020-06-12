@@ -1,258 +1,258 @@
 {
-  "commands": {
-    "help": {
-      "description": "Help command",
-      "type": "admin",
-      "args": [
+"commands":{
+"help":{
+"description":"Helpcommand",
+"type":"admin",
+"args":[
 
-      ],
-      "command": {
-        "handler": "textResponder",
-        "name": "showBasicHelp",
-        "args": []
-      }
-    },
-    "memory": {
-      "description": "Memory command",
-      "type": "admin",
-      "args": [
+],
+"command":{
+"handler":"textResponder",
+"name":"showBasicHelp",
+"args":[]
+}
+},
+"memory":{
+"description":"Memorycommand",
+"type":"admin",
+"args":[
 
-      ],
-      "command": {
-        "handler": "textResponder",
-        "name": "showMemoryUsage",
-        "args": []
-      }
-    },
-    "join": {
-      "description": "Join sender's current voice channel",
-      "type": "voice",
-      "args": [],
-      "command": {
-        "handler": "textResponder",
-        "name": "react",
-        "args": [
-          "\uD83D\uDC4C"
-        ]
-      }
-    },
-    "play": {
-      "description": "Play a song (currently supports Youtube search/url).",
-      "type": "voice",
-      "args": [
-        {
-          "name": "song",
-          "description": "Song name / Youtube URL",
-          "flag": "_",
-          "required": true
-        }
-      ],
-      "command": {
-        "handler": "dj",
-        "name": "play",
-        "args": [
-          "song"
-        ]
-      }
-    },
-    "skip": {
-      "description": "Skip the current song.",
-      "type": "voice",
-      "args": [],
-      "command": {
-        "handler": "dj",
-        "name": "skip",
-        "args": []
-      }
-    },
-    "pause": {
-      "description": "Pause the current song.",
-      "type": "voice",
-      "args": [],
-      "command": {
-        "handler": "dj",
-        "name": "pause",
-        "args": []
-      }
-    },
-    "resume": {
-      "description": "Resume the current song.",
-      "type": "voice",
-      "args": [],
-      "command": {
-        "handler": "dj",
-        "name": "resume",
-        "args": []
-      }
-    },
-    "stop": {
-      "description": "Stop the current song.",
-      "type": "voice",
-      "args": [],
-      "command": {
-        "handler": "dj",
-        "name": "stop",
-        "args": []
-      }
-    },
-    "volume": {
-      "description": "Set the bot output volume (0 - 100).  Lower and Higher options also exist.",
-      "type": "voice",
-      "args": [
-        {
-          "name": "volume",
-          "description": "Volume (0 - 100)",
-          "flag": "_",
-          "required": true,
-          "integer": true
-        }
-      ],
-      "command": {
-        "description": "",
-        "handler": "dj",
-        "name": "skip",
-        "args": [
-          "volume",
-          false
-        ]
-      }
-    },
-    "queue": {
-      "description": "Display the current song queue.",
-      "type": "voice",
-      "args": [],
-      "command": {
-        "handler": "dj",
-        "name": "queue",
-        "args": []
-      }
-    },
-    "song": {
-      "description": "Display the current song.",
-      "type": "voice",
-      "args": [],
-      "command": {
-        "handler": "dj",
-        "name": "song",
-        "args": []
-      }
-    },
-    "lower": {
-      "description": "Lower the volume by 50%.",
-      "type": "voice",
-      "args": [],
-      "command": {
-        "handler": "dj",
-        "name": "volume",
-        "args": [
-          50,
-          true
-        ]
-      }
-    },
-    "higher": {
-      "description": "Raise the volume by 50%.",
-      "type": "voice",
-      "args": [],
-      "command": {
-        "handler": "dj",
-        "name": "volume",
-        "args": [
-          200,
-          true
-        ]
-      }
-    },
-    "clip": {
-      "description": "Clip what a person said.  Uploads an mp3 file up to 20 seconds in length.",
-      "type": "voice",
-      "args": [
-        {
-          "name": "user",
-          "description": "User's display name that you wish to clip.",
-          "flag": "_",
-          "required": true
-        },
-        {
-          "name": "caption",
-          "description": "Caption of the clip.",
-          "flag": "c",
-          "required": false
-        },
-        {
-          "name": "length",
-          "description": "Length of the clip (max 20 seconds).",
-          "flag": "l",
-          "required": false
-        },
-        {
-          "name": "transcribe",
-          "description": "Transcribe clip",
-          "flag": "-t",
-          "required": false
-        }
-      ],
-      "command": {
-        "handler": "audioHandler",
-        "name": "recordUserToFile",
-        "args": [
-          "user",
-          "caption",
-          "length",
-          "transcribe"
-        ]
-      }
-    },
-    "replay": {
-      "description": "Replay what a user said.  Replays up to 20 seconds.",
-      "type": "voice",
-      "args": [
-        {
-          "name": "user",
-          "description": "User's display name that you wish to replay.",
-          "flag": "_",
-          "required": true
-        },
-        {
-          "name": "length",
-          "description": "Length of replay (max 20 seconds).",
-          "flag": "l",
-          "required": false
-        }
-      ],
-      "command": {
-        "handler": "audioHandler",
-        "name": "replayUser",
-        "args": [
-          "user"
-        ]
-      }
-    },
-    "say": {
-      "description": "Say something!",
-      "type": "voice",
-      "args": [
-        {
-          "name": "message",
-          "description": "The message you want to say.",
-          "flag": "_",
-          "required": true
-        },
-        {
-          "name": "voice",
-          "description": "Voice to use.",
-          "flag": "v",
-          "required": false
-        }
-      ],
-      "command": {
-        "handler": "dj",
-        "name": "say",
-        "args": [
-          "message",
-          "voice"
-        ]
-      }
-    }
-  }
+],
+"command":{
+"handler":"textResponder",
+"name":"showMemoryUsage",
+"args":[]
+}
+},
+"join":{
+"description":"Joinsender'scurrentvoicechannel",
+"type":"voice",
+"args":[],
+"command":{
+"handler":"textResponder",
+"name":"react",
+"args":[
+"\uD83D\uDC4C"
+]
+}
+},
+"play":{
+"description":"Playasong(currentlysupportsYoutubesearch/url).",
+"type":"voice",
+"args":[
+{
+"name":"song",
+"description":"Songname/YoutubeURL",
+"flag":"_",
+"required":true
+}
+],
+"command":{
+"handler":"dj",
+"name":"play",
+"args":[
+"song"
+]
+}
+},
+"skip":{
+"description":"Skipthecurrentsong.",
+"type":"voice",
+"args":[],
+"command":{
+"handler":"dj",
+"name":"skip",
+"args":[]
+}
+},
+"pause":{
+"description":"Pausethecurrentsong.",
+"type":"voice",
+"args":[],
+"command":{
+"handler":"dj",
+"name":"pause",
+"args":[]
+}
+},
+"resume":{
+"description":"Resumethecurrentsong.",
+"type":"voice",
+"args":[],
+"command":{
+"handler":"dj",
+"name":"resume",
+"args":[]
+}
+},
+"stop":{
+"description":"Stopthecurrentsong.",
+"type":"voice",
+"args":[],
+"command":{
+"handler":"dj",
+"name":"stop",
+"args":[]
+}
+},
+"volume":{
+"description":"Setthebotoutputvolume(0-100).LowerandHigheroptionsalsoexist.",
+"type":"voice",
+"args":[
+{
+"name":"volume",
+"description":"Volume(0-100)",
+"flag":"_",
+"required":true,
+"integer":true
+}
+],
+"command":{
+"description":"",
+"handler":"dj",
+"name":"skip",
+"args":[
+"volume",
+false
+]
+}
+},
+"queue":{
+"description":"Displaythecurrentsongqueue.",
+"type":"voice",
+"args":[],
+"command":{
+"handler":"dj",
+"name":"queue",
+"args":[]
+}
+},
+"song":{
+"description":"Displaythecurrentsong.",
+"type":"voice",
+"args":[],
+"command":{
+"handler":"dj",
+"name":"song",
+"args":[]
+}
+},
+"lower":{
+"description":"Lowerthevolumeby50%.",
+"type":"voice",
+"args":[],
+"command":{
+"handler":"dj",
+"name":"volume",
+"args":[
+50,
+true
+]
+}
+},
+"higher":{
+"description":"Raisethevolumeby50%.",
+"type":"voice",
+"args":[],
+"command":{
+"handler":"dj",
+"name":"volume",
+"args":[
+200,
+true
+]
+}
+},
+"clip":{
+"description":"Clipwhatapersonsaid.Uploadsanmp3fileupto20secondsinlength.",
+"type":"voice",
+"args":[
+{
+"name":"user",
+"description":"User'sdisplaynamethatyouwishtoclip.",
+"flag":"_",
+"required":true
+},
+{
+"name":"caption",
+"description":"Captionoftheclip.",
+"flag":"c",
+"required":false
+},
+{
+"name":"length",
+"description":"Lengthoftheclip(max20seconds).",
+"flag":"l",
+"required":false
+},
+{
+"name":"transcribe",
+"description":"Transcribeclip",
+"flag":"-t",
+"required":false
+}
+],
+"command":{
+"handler":"audioHandler",
+"name":"recordUserToFile",
+"args":[
+"user",
+"caption",
+"length",
+"transcribe"
+]
+}
+},
+"replay":{
+"description":"Replaywhatausersaid.Replaysupto20seconds.",
+"type":"voice",
+"args":[
+{
+"name":"user",
+"description":"User'sdisplaynamethatyouwishtoreplay.",
+"flag":"_",
+"required":true
+},
+{
+"name":"length",
+"description":"Lengthofreplay(max20seconds).",
+"flag":"l",
+"required":false
+}
+],
+"command":{
+"handler":"audioHandler",
+"name":"replayUser",
+"args":[
+"user"
+]
+}
+},
+"say":{
+"description":"Saysomething!",
+"type":"voice",
+"args":[
+{
+"name":"message",
+"description":"Themessageyouwanttosay.",
+"flag":"_",
+"required":true
+},
+{
+"name":"voice",
+"description":"Voicetouse.",
+"flag":"v",
+"required":false
+}
+],
+"command":{
+"handler":"dj",
+"name":"say",
+"args":[
+"message",
+"voice"
+]
+}
+}
+}
 }

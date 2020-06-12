@@ -1,160 +1,160 @@
-const commands = require('./dm_config.json')
-const configHandler = require('./config.js').ConfigHandler
+constcommands=require('./dm_config.json')
+constconfigHandler=require('./config.js').ConfigHandler
 
-const defaultConfig = require('./default_config.json')
+constdefaultConfig=require('./default_config.json')
 
-class DMHandler {
-    constructor() {
-        /** @member {Map<string, Object>} **/
-        this.messageStack = new Map()
-    }
-
-    /**
-     *
-     * @param {module:"discord.js".Client} client
-     * @param {Message} msg
-     */
-    onMessageReceived(client, msg) {
-        if (msg.author.bot) {
-            return
-        }
-        if (!this.messageStack.has(msg.author.id)) {
-            if (!checkIfUserIsInAServerAndIsAdmin(client, msg.author)) {
-                msg.reply("You are not an administrator of any server I am apart of!")
-                return
-            }
-            this.startNewCommandProcess(client, msg)
-        }
-        this.resumeCommandProcess(client, msg)
-    }
-
-    /**
-     *
-     * @param {module:"discord.js".Client} client
-     * @param {Message} msg
-     */
-    startNewCommandProcess(client, msg) {
-        const yargs = require('yargs-parser')(msg.content)
-        let commandType = (yargs['_'].shift().trim())
-        if (!commands["commands"][commandType]) {
-            console.log("Invalid command")
-            return
-        }
-        let command = commands["commands"][commandType]
-        this.messageStack.set(msg.author.id, {
-            "upcoming": command["stack"],
-            "completed": [],
-            "variables": [],
-            "step": "prompt",
-        })
-    }
-
-    /**
-     *
-     * @param {module:"discord.js".Client} client
-     * @param {Message} msg
-     */
-    resumeCommandProcess(client, msg) {
-        const stack = this.messageStack.get(msg.author.id)
-        if (stack.step === "prompt") {
-            msg.reply(commands["commands"][stack.upcoming[0]]["prompt"])
-            stack.step = "response"
-            return
-        }
-        let commandType = stack.upcoming.shift()
-        let command = commands["commands"][commandType]
-        let invalidArg = false
-        command["args"].forEach(arg => {
-            let parsedArg = preParseArgs(client, msg, arg)
-            console.log(`Parsed arg ${parsedArg}`)
-            if (command["validation"] && !validateArgs(command["validation"], parsedArg)) {
-                invalidArg = true
-            }
-            stack.variables.push(parsedArg)
-        })
-        if (invalidArg) {
-            msg.reply("Invalid Argument, try again")
-            stack.upcoming.unshift(commandType)
-            return
-        }
-        stack.step = "prompt"
-        stack.completed.push(commandType)
-        if (stack.upcoming.length === 0) {
-            configHandler.setNewConfigParameter(...stack.variables)
-            this.messageStack.delete(msg.author.id)
-            return
-        }
-        this.resumeCommandProcess(client, msg)
-    }
-}
-
-function preParseArgs(client, msg, arg) {
-    switch(arg) {
-        case "guilds":
-            return getUserGuilds(client, msg.author)
-        case "members":
-            return getGuildMembers(client, msg.author, msg.content)
-        case "guild":
-            return getGuildFromName(client, msg.author, msg.content)
-    }
-    return msg.content
-}
-
-function validateArgs(validation, arg) {
-    switch(validation) {
-        case "guild":
-            return arg
-        case "type":
-            return defaultConfig[arg]
-    }
-    return true
+classDMHandler{
+constructor(){
+/**@member{Map<string,Object>}**/
+this.messageStack=newMap()
 }
 
 /**
- *
- * @param {module:"discord.js".Client} client
- * @param {User} user
- * @return {Collection<Guild> | Array<Guild>}
- */
-function getUserGuilds(client, user) {
-    const userGuilds = []
-    client.guilds.cache.filter(guild => guild.members.cache.find(it => it.id === user.id) !== undefined)
-        .forEach(guild => {
-            const guildMember = guild.members.cache.find(it => it.id === user.id)
-            if (guildMember.hasPermission("ADMINISTRATOR")) {
-                userGuilds.push(guild)
-            }
-        })
-    return userGuilds
+*
+*@param{module:"discord.js".Client}client
+*@param{Message}msg
+*/
+onMessageReceived(client,msg){
+if(msg.author.bot){
+return
 }
-
-function getGuildFromName(client, user, guildName) {
-    return getUserGuilds(client, user).find(it => it.name === guildName)
+if(!this.messageStack.has(msg.author.id)){
+if(!checkIfUserIsInAServerAndIsAdmin(client,msg.author)){
+msg.reply("YouarenotanadministratorofanyserverIamapartof!")
+return
+}
+this.startNewCommandProcess(client,msg)
+}
+this.resumeCommandProcess(client,msg)
 }
 
 /**
- *
- * @param client
- * @param {User} user
- * @param {string} guildName
- * @return {Collection<GuildMember> | Array<GuildMember>}
- */
-function getGuildMembers(client, user, guildName) {
-    const guild = getGuildFromName(client, user, guildName)
-    if (!guild) {
-        return []
-    }
-    return guild.members.cache.values()
+*
+*@param{module:"discord.js".Client}client
+*@param{Message}msg
+*/
+startNewCommandProcess(client,msg){
+constyargs=require('yargs-parser')(msg.content)
+letcommandType=(yargs['_'].shift().trim())
+if(!commands["commands"][commandType]){
+console.log("Invalidcommand")
+return
+}
+letcommand=commands["commands"][commandType]
+this.messageStack.set(msg.author.id,{
+"upcoming":command["stack"],
+"completed":[],
+"variables":[],
+"step":"prompt",
+})
 }
 
 /**
- *
- * @param {module:"discord.js".Client} client
- * @param {User} user
- * @return {Boolean}
- */
-function checkIfUserIsInAServerAndIsAdmin(client, user) {
-    return getUserGuilds(client, user).length !== 0
+*
+*@param{module:"discord.js".Client}client
+*@param{Message}msg
+*/
+resumeCommandProcess(client,msg){
+conststack=this.messageStack.get(msg.author.id)
+if(stack.step==="prompt"){
+msg.reply(commands["commands"][stack.upcoming[0]]["prompt"])
+stack.step="response"
+return
+}
+letcommandType=stack.upcoming.shift()
+letcommand=commands["commands"][commandType]
+letinvalidArg=false
+command["args"].forEach(arg=>{
+letparsedArg=preParseArgs(client,msg,arg)
+console.log(`Parsedarg${parsedArg}`)
+if(command["validation"]&&!validateArgs(command["validation"],parsedArg)){
+invalidArg=true
+}
+stack.variables.push(parsedArg)
+})
+if(invalidArg){
+msg.reply("InvalidArgument,tryagain")
+stack.upcoming.unshift(commandType)
+return
+}
+stack.step="prompt"
+stack.completed.push(commandType)
+if(stack.upcoming.length===0){
+configHandler.setNewConfigParameter(...stack.variables)
+this.messageStack.delete(msg.author.id)
+return
+}
+this.resumeCommandProcess(client,msg)
+}
 }
 
-module.exports.DMHandler = new DMHandler()
+functionpreParseArgs(client,msg,arg){
+switch(arg){
+case"guilds":
+returngetUserGuilds(client,msg.author)
+case"members":
+returngetGuildMembers(client,msg.author,msg.content)
+case"guild":
+returngetGuildFromName(client,msg.author,msg.content)
+}
+returnmsg.content
+}
+
+functionvalidateArgs(validation,arg){
+switch(validation){
+case"guild":
+returnarg
+case"type":
+returndefaultConfig[arg]
+}
+returntrue
+}
+
+/**
+*
+*@param{module:"discord.js".Client}client
+*@param{User}user
+*@return{Collection<Guild>|Array<Guild>}
+*/
+functiongetUserGuilds(client,user){
+constuserGuilds=[]
+client.guilds.cache.filter(guild=>guild.members.cache.find(it=>it.id===user.id)!==undefined)
+.forEach(guild=>{
+constguildMember=guild.members.cache.find(it=>it.id===user.id)
+if(guildMember.hasPermission("ADMINISTRATOR")){
+userGuilds.push(guild)
+}
+})
+returnuserGuilds
+}
+
+functiongetGuildFromName(client,user,guildName){
+returngetUserGuilds(client,user).find(it=>it.name===guildName)
+}
+
+/**
+*
+*@paramclient
+*@param{User}user
+*@param{string}guildName
+*@return{Collection<GuildMember>|Array<GuildMember>}
+*/
+functiongetGuildMembers(client,user,guildName){
+constguild=getGuildFromName(client,user,guildName)
+if(!guild){
+return[]
+}
+returnguild.members.cache.values()
+}
+
+/**
+*
+*@param{module:"discord.js".Client}client
+*@param{User}user
+*@return{Boolean}
+*/
+functioncheckIfUserIsInAServerAndIsAdmin(client,user){
+returngetUserGuilds(client,user).length!==0
+}
+
+module.exports.DMHandler=newDMHandler()

@@ -1,7 +1,7 @@
 {
-  "aliases": {},
-  "nicknames": {},
-  "defaultTextChannel": "",
-  "prefix": "?",
-  "volume": 0.25
+"aliases":{},
+"nicknames":{},
+"defaultTextChannel":"",
+"prefix":"?",
+"volume":0.25
 }
